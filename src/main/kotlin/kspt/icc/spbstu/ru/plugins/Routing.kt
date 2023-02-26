@@ -1,17 +1,15 @@
 package kspt.icc.spbstu.ru.plugins
 
 import at.favre.lib.crypto.bcrypt.BCrypt
-import io.ktor.http.*
-import io.ktor.server.routing.*
-import io.ktor.server.response.*
-import io.ktor.server.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.html.*
+import io.ktor.server.http.content.*
 import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import kotlinx.html.*
-import kotlinx.serialization.Serializable
 import kspt.icc.spbstu.ru.AuthName
 import kspt.icc.spbstu.ru.CommonRoutes
 import kspt.icc.spbstu.ru.FormFields
@@ -107,6 +105,9 @@ internal fun Routing.loginRoute() {
                                 }
                             }
                         }
+                    }
+                    script {
+                        src = "index.js"
                     }
                 }
             }
