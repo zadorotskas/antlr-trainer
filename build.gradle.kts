@@ -5,6 +5,7 @@ val exposed_version: String by project
 val h2_version: String by project
 val bcrypt_version: String by project
 val postgres_version: String by project
+val email_version: String by project
 
 plugins {
     application
@@ -42,6 +43,7 @@ dependencies {
     implementation("com.h2database:h2:$h2_version")
     implementation("at.favre.lib:bcrypt:$bcrypt_version")
     implementation("org.postgresql:postgresql:$postgres_version")
+    implementation("org.apache.commons:commons-email:$email_version")
 
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")

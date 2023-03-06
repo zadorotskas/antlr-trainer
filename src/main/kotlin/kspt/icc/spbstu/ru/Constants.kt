@@ -16,6 +16,7 @@ object CommonRoutes {
     const val LOGOUT = "/logout"
     const val PROFILE = "/profile"
     const val REGISTER = "/register"
+    const val THEORY = "/theory"
 }
 
 object Cookies {

@@ -8,4 +8,6 @@ interface DAOFacade {
     suspend fun user(id: Int): User?
     suspend fun addUser(login: String, hashedPassword: String, role: UserRole): User?
     suspend fun deleteUser(id: Int): Boolean
+
+    suspend fun theory(id: Int):
 }

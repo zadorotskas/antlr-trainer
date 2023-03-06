@@ -15,7 +15,7 @@ fun main() {
 }
 
 fun Application.module() {
-    DatabaseFactory.init()
+    DatabaseFactory.init(environment.config)
 
     configureTemplating()
     configureSecurity()

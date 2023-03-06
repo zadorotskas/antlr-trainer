@@ -1,6 +1,7 @@
 package kspt.icc.spbstu.ru.plugins
 
 import at.favre.lib.crypto.bcrypt.BCrypt
+import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.html.*
@@ -9,6 +10,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
+import io.ktor.util.pipeline.*
 import kotlinx.html.*
 import kspt.icc.spbstu.ru.AuthName
 import kspt.icc.spbstu.ru.CommonRoutes
@@ -16,6 +18,7 @@ import kspt.icc.spbstu.ru.FormFields
 import kspt.icc.spbstu.ru.dao
 import kspt.icc.spbstu.ru.model.UserPrincipal
 import kspt.icc.spbstu.ru.model.UserRole
+import java.io.File
 
 fun Application.configureRouting() {
 
@@ -25,10 +28,6 @@ fun Application.configureRouting() {
         logoutRoute()
         profileRoute()
         registerRoute()
-
-        get("/") {
-            call.respondText("Hello World!")
-        }
 
         static("/") {
             staticBasePackage = "static"
@@ -206,5 +205,38 @@ internal fun Route.registerRoute() {
 
             call.respondRedirect("${CommonRoutes.LOGIN}?registered")
         }
+    }
+}
+
+internal fun Route.theoryRoute() {
+    val config = environment?.config
+    route(CommonRoutes.THEORY) {
+        get("/all") {
+
+        }
+        get("/{id}") {
+            val id = call.parameters["id"]
+        }
+        post {
+            val theoryFolder = config?.propertyOrNull("ktor.data.theoryFolder")?.getString() ?: "/data/theory"
+            uploadFile(theoryFolder)
+        }
+    }
+}
+
+private suspend fun PipelineContext<Unit, ApplicationCall>.uploadFile(path: String) {
+    val multipart = call.receiveMultipart()
+    multipart.forEachPart { part ->
+        if(part is PartData.FileItem) {
+            val name = part.originalFileName!!
+            val file = File("$path/$name")
+
+            part.streamProvider().use { its ->
+                file.outputStream().buffered().use {
+                    its.copyTo(it)
+                }
+            }
+        }
+        part.dispose()
     }
 }
