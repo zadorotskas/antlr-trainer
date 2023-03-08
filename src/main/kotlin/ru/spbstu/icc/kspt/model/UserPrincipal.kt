@@ -1,4 +1,4 @@
-package kspt.icc.spbstu.ru.model
+package ru.spbstu.icc.kspt.model
 
 import io.ktor.server.auth.*
 
