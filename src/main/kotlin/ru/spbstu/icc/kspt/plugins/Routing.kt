@@ -1,9 +1,11 @@
-package kspt.icc.spbstu.ru.plugins
+package ru.spbstu.icc.kspt.plugins
 
 import at.favre.lib.crypto.bcrypt.BCrypt
+import com.aspose.html.converters.Converter
 import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.freemarker.*
 import io.ktor.server.html.*
 import io.ktor.server.http.content.*
 import io.ktor.server.request.*
@@ -12,12 +14,12 @@ import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import io.ktor.util.pipeline.*
 import kotlinx.html.*
-import kspt.icc.spbstu.ru.AuthName
-import kspt.icc.spbstu.ru.CommonRoutes
-import kspt.icc.spbstu.ru.FormFields
-import kspt.icc.spbstu.ru.dao
-import kspt.icc.spbstu.ru.model.UserPrincipal
-import kspt.icc.spbstu.ru.model.UserRole
+import ru.spbstu.icc.kspt.AuthName
+import ru.spbstu.icc.kspt.CommonRoutes
+import ru.spbstu.icc.kspt.FormFields
+import ru.spbstu.icc.kspt.dao
+import ru.spbstu.icc.kspt.model.UserPrincipal
+import ru.spbstu.icc.kspt.model.UserRole
 import java.io.File
 
 fun Application.configureRouting() {
@@ -28,10 +30,14 @@ fun Application.configureRouting() {
         logoutRoute()
         profileRoute()
         registerRoute()
+        theoryRoute()
 
         static("/") {
             staticBasePackage = "static"
             resources(".")
+            static("theory") {
+                resource("theory.js")
+            }
         }
     }
 }
@@ -106,7 +112,7 @@ internal fun Routing.loginRoute() {
                         }
                     }
                     script {
-                        src = "index.js"
+                        src = "login.js"
                     }
                 }
             }
@@ -142,11 +148,21 @@ internal fun Route.profileRoute() {
                         div {
                             +"You are admin!"
                         }
+                        div {
+                            button {
+                                id = "add-theory-btn"
+                                type = ButtonType.button
+                                +"Add theory"
+                            }
+                        }
                     }
                     div {
                         a(href = CommonRoutes.LOGOUT) {
                             +"Log out"
                         }
+                    }
+                    script {
+                        src = "profile.js"
                     }
                 }
             }
@@ -211,31 +227,80 @@ internal fun Route.registerRoute() {
 internal fun Route.theoryRoute() {
     val config = environment?.config
     route(CommonRoutes.THEORY) {
-        get("/all") {
+        authenticate(AuthName.SESSION) {
+            get("/all") {
 
+            }
+            get("/{id}") {
+                val id = call.parameters["id"]?.toInt() ?: error("missing id in request")
+                val theory = dao.theory(id) ?: error("can't find theory for id: $id")
+                val htmlPath = theory.path.replace(".md", ".html")
+                Converter.convertMarkdown(theory.path, htmlPath)
+                call.respond(FreeMarkerContent("theory.ftl", mapOf("name" to theory.name, "number" to theory.number, "body" to File(htmlPath).readText())))
+            }
         }
-        get("/{id}") {
-            val id = call.parameters["id"]
-        }
-        post {
-            val theoryFolder = config?.propertyOrNull("ktor.data.theoryFolder")?.getString() ?: "/data/theory"
-            uploadFile(theoryFolder)
+        authenticate(AuthName.SESSION_ADMIN) {
+            post("/upload") {
+                val number = 2 //call.receiveParameters()["number"]?.toInt() ?: 1 // error("missing number in request")
+                val theoryFolder = config?.propertyOrNull("data.theoryFolder")?.getString() ?: "/data/theory"
+                uploadAndSaveFile(theoryFolder, number)
+            }
+            post("/remove/{id}") {
+                val id = call.parameters["id"]?.toInt() ?: error("missing id in request")
+            }
+            get("/new") {
+                call.respondHtml {
+                    body {
+                        form {
+                            p {
+                                +"Add new lesson"
+                            }
+                            textArea {
+
+                            }
+                            div {
+                                button {
+                                    id = "upload-theory-btn"
+                                    type = ButtonType.button
+                                    +"Add lesson"
+                                }
+                            }
+                            div {
+                                input {
+                                    type = InputType.file
+                                    id = "theory-file"
+                                }
+                                button {
+                                    id = "upload-theory-from-file-btn"
+                                    type = ButtonType.button
+                                    +"Upload from file"
+                                }
+                            }
+                        }
+                        script {
+                            src = "theory.js"
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
-private suspend fun PipelineContext<Unit, ApplicationCall>.uploadFile(path: String) {
+private suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveFile(path: String, number: Int) {
     val multipart = call.receiveMultipart()
     multipart.forEachPart { part ->
         if(part is PartData.FileItem) {
             val name = part.originalFileName!!
-            val file = File("$path/$name")
+            val fullPath = "$path${File.pathSeparator}$name"
+            val file = File(fullPath)
 
             part.streamProvider().use { its ->
                 file.outputStream().buffered().use {
                     its.copyTo(it)
                 }
             }
+            dao.addTheory(name, number, fullPath)
         }
         part.dispose()
     }

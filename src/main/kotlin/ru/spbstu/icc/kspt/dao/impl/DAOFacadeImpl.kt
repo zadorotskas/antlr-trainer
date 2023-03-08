@@ -1,15 +1,13 @@
-package kspt.icc.spbstu.ru.dao.impl
+package ru.spbstu.icc.kspt.dao.impl
 
-import kspt.icc.spbstu.ru.dao.DAOFacade
-import kspt.icc.spbstu.ru.dao.DatabaseFactory.dbQuery
-import kspt.icc.spbstu.ru.model.User
-import kspt.icc.spbstu.ru.model.UserRole
-import kspt.icc.spbstu.ru.model.Users
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
+import ru.spbstu.icc.kspt.dao.DAOFacade
+import ru.spbstu.icc.kspt.dao.DatabaseFactory.dbQuery
+import ru.spbstu.icc.kspt.model.*
 
 class DAOFacadeImpl : DAOFacade {
     override suspend fun user(login: String): User? = dbQuery {
@@ -41,7 +39,35 @@ class DAOFacadeImpl : DAOFacade {
     private fun resultRowToUser(row: ResultRow) = User(
         id = row[Users.id],
         login = row[Users.login],
-        hashedPassword = row[Users.hashedPassword, ],
+        hashedPassword = row[Users.hashedPassword],
         role = row[Users.role]
     )
+
+    override suspend fun theory(id: Int): Theory? = dbQuery {
+        Theories
+            .select(Theories.id eq id)
+            .map(::resultRowToTheory)
+            .singleOrNull()
+    }
+
+    override suspend fun addTheory(name: String, number: Int, path: String) = dbQuery {
+        Theories.insert {
+            it[Theories.name] = name
+            it[Theories.number] = number
+            it[Theories.path] = path
+        }.resultedValues?.singleOrNull()?.let(::resultRowToTheory)
+    }
+
+    override suspend fun deleteTheory(id: Int): Boolean = dbQuery {
+        Theories.deleteWhere { Theories.id eq id } > 0
+    }
+
+    private fun resultRowToTheory(row: ResultRow): Theory {
+        return Theory(
+            id = row[Theories.id],
+            name = row[Theories.name],
+            number = row[Theories.number],
+            path = row[Theories.path]
+        )
+    }
 }

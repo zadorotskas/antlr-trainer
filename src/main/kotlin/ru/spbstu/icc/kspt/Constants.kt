@@ -1,4 +1,4 @@
-package kspt.icc.spbstu.ru
+package ru.spbstu.icc.kspt
 
 object FormFields {
     const val USERNAME = "username"
@@ -8,7 +8,7 @@ object FormFields {
 object AuthName {
     const val SESSION = "session"
     const val FORM = "form"
-    const val ADMIN = "admin"
+    const val SESSION_ADMIN = "admin"
 }
 
 object CommonRoutes {

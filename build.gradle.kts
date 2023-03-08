@@ -6,6 +6,7 @@ val h2_version: String by project
 val bcrypt_version: String by project
 val postgres_version: String by project
 val email_version: String by project
+val aspose_version: String by project
 
 plugins {
     application
@@ -17,7 +18,7 @@ plugins {
 group = "kspt.icc.spbstu.ru"
 version = "0.0.1"
 application {
-    mainClass.set("kspt.icc.spbstu.ru.ApplicationKt")
+    mainClass.set("ru.spbstu.icc.kspt.ApplicationKt")
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
@@ -25,6 +26,9 @@ application {
 
 repositories {
     mavenCentral()
+    maven {
+        url = uri("https://repository.aspose.com/repo/")
+    }
 }
 
 dependencies {
@@ -44,6 +48,7 @@ dependencies {
     implementation("at.favre.lib:bcrypt:$bcrypt_version")
     implementation("org.postgresql:postgresql:$postgres_version")
     implementation("org.apache.commons:commons-email:$email_version")
+    implementation(group = "com.aspose", name = "aspose-html" , version = aspose_version, classifier = "jdk16")
 
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
