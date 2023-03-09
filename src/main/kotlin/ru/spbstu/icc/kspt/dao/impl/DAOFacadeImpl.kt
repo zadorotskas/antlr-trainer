@@ -1,10 +1,7 @@
 package ru.spbstu.icc.kspt.dao.impl
 
-import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
 import ru.spbstu.icc.kspt.dao.DAOFacade
 import ru.spbstu.icc.kspt.dao.DatabaseFactory.dbQuery
 import ru.spbstu.icc.kspt.model.*
@@ -43,31 +40,33 @@ class DAOFacadeImpl : DAOFacade {
         role = row[Users.role]
     )
 
-    override suspend fun theory(id: Int): Theory? = dbQuery {
-        Theories
-            .select(Theories.id eq id)
-            .map(::resultRowToTheory)
+    override suspend fun lesson(id: Int): Lesson? = dbQuery {
+        Lessons
+            .select(Lessons.id eq id)
+            .map(::resultRowToLesson)
             .singleOrNull()
     }
 
-    override suspend fun addTheory(name: String, number: Int, path: String) = dbQuery {
-        Theories.insert {
-            it[Theories.name] = name
-            it[Theories.number] = number
-            it[Theories.path] = path
-        }.resultedValues?.singleOrNull()?.let(::resultRowToTheory)
+    override suspend fun allLessons(): List<Lesson> = dbQuery {
+        Lessons.selectAll().map(::resultRowToLesson)
     }
 
-    override suspend fun deleteTheory(id: Int): Boolean = dbQuery {
-        Theories.deleteWhere { Theories.id eq id } > 0
+    override suspend fun addLesson(name: String, number: Int) = dbQuery {
+        Lessons.insert {
+            it[Lessons.name] = name
+            it[Lessons.number] = number
+        }.resultedValues?.singleOrNull()?.let(::resultRowToLesson)
     }
 
-    private fun resultRowToTheory(row: ResultRow): Theory {
-        return Theory(
-            id = row[Theories.id],
-            name = row[Theories.name],
-            number = row[Theories.number],
-            path = row[Theories.path]
+    override suspend fun deleteLesson(id: Int): Boolean = dbQuery {
+        Lessons.deleteWhere { Lessons.id eq id } > 0
+    }
+
+    private fun resultRowToLesson(row: ResultRow): Lesson {
+        return Lesson(
+            id = row[Lessons.id],
+            name = row[Lessons.name],
+            number = row[Lessons.number]
         )
     }
 }

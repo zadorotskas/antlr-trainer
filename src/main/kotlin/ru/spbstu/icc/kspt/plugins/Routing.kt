@@ -2,10 +2,11 @@ package ru.spbstu.icc.kspt.plugins
 
 import at.favre.lib.crypto.bcrypt.BCrypt
 import com.aspose.html.converters.Converter
+import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.freemarker.*
+import io.ktor.server.config.*
 import io.ktor.server.html.*
 import io.ktor.server.http.content.*
 import io.ktor.server.request.*
@@ -229,24 +230,45 @@ internal fun Route.theoryRoute() {
     route(CommonRoutes.THEORY) {
         authenticate(AuthName.SESSION) {
             get("/all") {
-
+                val lessons = dao.allLessons()
+                call.respondHtml {
+                    head {
+                        title = "Lessons"
+                    }
+                    body {
+                        h1 {
+                            +"Lessons:"
+                        }
+                        lessons.forEach { lesson ->
+                            a {
+                                href = "/theory/${lesson.id}"
+                                +"Lesson ${lesson.number}: ${lesson.name}"
+                            }
+                            br
+                        }
+                    }
+                }
             }
             get("/{id}") {
                 val id = call.parameters["id"]?.toInt() ?: error("missing id in request")
-                val theory = dao.theory(id) ?: error("can't find theory for id: $id")
-                val htmlPath = theory.path.replace(".md", ".html")
-                Converter.convertMarkdown(theory.path, htmlPath)
-                call.respond(FreeMarkerContent("theory.ftl", mapOf("name" to theory.name, "number" to theory.number, "body" to File(htmlPath).readText())))
+                val lesson = dao.lesson(id) ?: error("can't find lesson for id: $id")
+
+                val filePath = "${config.lessonsPath}${File.separator}${lesson.id}${File.separator}${lesson.name}"
+                val htmlPath = "$filePath.html"
+                val mdPath = "$filePath.md"
+                Converter.convertMarkdown(mdPath, htmlPath)
+                val htmlFile = File(htmlPath)
+                call.respondText(htmlFile.readText(), ContentType.Text.Html)
+                htmlFile.delete()
             }
         }
         authenticate(AuthName.SESSION_ADMIN) {
             post("/upload") {
-                val number = 2 //call.receiveParameters()["number"]?.toInt() ?: 1 // error("missing number in request")
-                val theoryFolder = config?.propertyOrNull("data.theoryFolder")?.getString() ?: "/data/theory"
-                uploadAndSaveFile(theoryFolder, number)
+                uploadAndSaveFile(config.lessonsPath)
+                call.respondRedirect("/theory/all")
             }
             post("/remove/{id}") {
-                val id = call.parameters["id"]?.toInt() ?: error("missing id in request")
+                //TODO() val id = call.parameters["id"]?.toInt() ?: error("missing id in request")
             }
             get("/new") {
                 call.respondHtml {
@@ -255,8 +277,21 @@ internal fun Route.theoryRoute() {
                             p {
                                 +"Add new lesson"
                             }
+                            div {
+                                input {
+                                    type = InputType.text
+                                    id = "lesson-number-input"
+                                    placeholder = "Number"
+                                }
+                                input {
+                                    type = InputType.text
+                                    id = "lesson-name-input"
+                                    placeholder = "Name"
+                                }
+                            }
                             textArea {
-
+                                id = "lesson-text-area"
+                                placeholder = "Lesson content"
                             }
                             div {
                                 button {
@@ -287,21 +322,45 @@ internal fun Route.theoryRoute() {
     }
 }
 
-private suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveFile(path: String, number: Int) {
+private suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveFile(path: String) {
     val multipart = call.receiveMultipart()
-    multipart.forEachPart { part ->
-        if(part is PartData.FileItem) {
-            val name = part.originalFileName!!
-            val fullPath = "$path${File.pathSeparator}$name"
-            val file = File(fullPath)
+    var fileBytesParam: ByteArray? = null
+    var fileNameParam: String? = null
+    var numberParam: Int? = null
+    var lessonParam: String? = null
 
-            part.streamProvider().use { its ->
-                file.outputStream().buffered().use {
-                    its.copyTo(it)
+    multipart.forEachPart { part ->
+        when (part) {
+            is PartData.FileItem -> {
+                fileBytesParam = part.streamProvider().readBytes()
+            }
+
+            is PartData.FormItem -> {
+                when (part.name) {
+                    "number" -> numberParam = part.value.toInt()
+                    "name" -> fileNameParam = part.value
+                    "lesson" -> lessonParam = part.value
                 }
             }
-            dao.addTheory(name, number, fullPath)
+
+            else -> {}
         }
         part.dispose()
     }
+
+    val fileName = fileNameParam ?: error("does not receive file name")
+    val number = numberParam ?: error("does not receive number")
+
+    val lesson = dao.addLesson(fileName, number) ?: error("cant save file info in database")
+    val directory = "$path${File.separator}${lesson.id}"
+    File(directory).mkdirs()
+    val file = File("$directory${File.separator}$fileNameParam.md")
+    fileBytesParam?.let {
+        file.writeBytes(it)
+    } ?: lessonParam?.let {
+        file.writeText(it)
+    } ?: error("does not receive file")
 }
+
+private val ApplicationConfig?.lessonsPath: String
+    get() = System.getProperty("user.dir") + (this?.propertyOrNull("data.lessonsFolder")?.getString() ?: "/data/lessons")

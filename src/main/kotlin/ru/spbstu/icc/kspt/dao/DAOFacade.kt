@@ -1,6 +1,6 @@
 package ru.spbstu.icc.kspt.dao
 
-import ru.spbstu.icc.kspt.model.Theory
+import ru.spbstu.icc.kspt.model.Lesson
 import ru.spbstu.icc.kspt.model.User
 import ru.spbstu.icc.kspt.model.UserRole
 
@@ -10,7 +10,8 @@ interface DAOFacade {
     suspend fun addUser(login: String, hashedPassword: String, role: UserRole): User?
     suspend fun deleteUser(id: Int): Boolean
 
-    suspend fun theory(id: Int): Theory?
-    suspend fun addTheory(name: String, number: Int, path: String): Theory?
-    suspend fun deleteTheory(id: Int): Boolean
+    suspend fun lesson(id: Int): Lesson?
+    suspend fun allLessons(): List<Lesson>
+    suspend fun addLesson(name: String, number: Int): Lesson?
+    suspend fun deleteLesson(id: Int): Boolean
 }

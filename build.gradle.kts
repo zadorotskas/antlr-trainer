@@ -49,6 +49,7 @@ dependencies {
     implementation("org.postgresql:postgresql:$postgres_version")
     implementation("org.apache.commons:commons-email:$email_version")
     implementation(group = "com.aspose", name = "aspose-html" , version = aspose_version, classifier = "jdk16")
+    implementation("com.xenoamess:nashorn:jdk8u265-b01-x3")
 
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")

@@ -1,30 +1,21 @@
 const uploadTheoryFile = document.getElementById('upload-theory-from-file-btn');
 uploadTheoryFile.addEventListener('click', () => {
-  const file = document.getElementById('theory-file');
-  const fileReader = new FileReader();
-  fileReader.readAsArrayBuffer(file.files[0]);
-  fileReader.onload = async (event) => {
-      const content = event.target.result;
-      const CHUNK_SIZE = 5000;
-      const totalChunks = event.target.result.byteLength / CHUNK_SIZE;
-
-      for (let chunk = 0; chunk < totalChunks + 1; chunk++) {
-          let CHUNK = content.slice(chunk * CHUNK_SIZE, (chunk + 1) * CHUNK_SIZE)
-          await fetch('/theory/upload', {
-                          'method' : 'POST',
-                          'headers' : {
-                              'content-type' : "application/octet-stream",
-                              'content-length' : CHUNK.length,
-                          },
-                          'body': CHUNK
-                  })
-      }
-  }
+    var formData = new FormData();
+    formData.append("lesson", document.getElementById("theory-file").files[0]);
+    sendLesson(formData)
 });
-
 
 const uploadTheory = document.getElementById('upload-theory-btn');
 uploadTheory.addEventListener('click', () => {
-  window.location.href = '/theory/new';
+    var formData = new FormData();
+    formData.append("lesson", document.getElementById("lesson-text-area").value);
+    sendLesson(formData)
 });
 
+const sendLesson = (formData) => {
+    formData.append("number", document.getElementById("lesson-number-input").value);
+    formData.append("name", document.getElementById("lesson-name-input").value);
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/theory/upload");
+    xhr.send(formData);
+}
