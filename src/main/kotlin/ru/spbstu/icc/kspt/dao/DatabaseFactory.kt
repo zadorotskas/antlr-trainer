@@ -26,14 +26,6 @@ object DatabaseFactory {
             SchemaUtils.create(Users)
             SchemaUtils.create(Lessons)
         }
-//        runBlocking {
-//            dbQuery {
-//                Users
-//                    .update ( {Users.login eq "admin" }) {
-//                        it[Users.role] = UserRole.ADMIN
-//                    }
-//            }
-//        }
     }
 
     suspend fun <T> dbQuery(block: suspend () -> T): T =
