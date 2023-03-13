@@ -13,16 +13,27 @@ object DatabaseFactory {
     fun init(config: ApplicationConfig) {
         val driverClassName = config.propertyOrNull("ktor.deployment.jdbcDriver")?.getString() ?: "org.h2.Driver"
         val jdbcURL = config.propertyOrNull("ktor.deployment.jdbcURL")?.getString() ?: "jdbc:h2:file:./build/db"
+        val user = config.propertyOrNull("ktor.deployment.dbUser")?.getString() ?: ""
+        val password = config.propertyOrNull("ktor.deployment.dbPassword")?.getString() ?: ""
         val database = Database.connect(
             url = jdbcURL,
             driver = driverClassName,
-            user = "postgres"
+            user = user,
+            password = password
         )
 
         transaction(database) {
             SchemaUtils.create(Users)
             SchemaUtils.create(Lessons)
         }
+//        runBlocking {
+//            dbQuery {
+//                Users
+//                    .update ( {Users.login eq "admin" }) {
+//                        it[Users.role] = UserRole.ADMIN
+//                    }
+//            }
+//        }
     }
 
     suspend fun <T> dbQuery(block: suspend () -> T): T =

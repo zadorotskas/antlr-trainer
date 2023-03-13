@@ -16,6 +16,7 @@ const sendLesson = (formData) => {
     formData.append("number", document.getElementById("lesson-number-input").value);
     formData.append("name", document.getElementById("lesson-name-input").value);
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", "/theory/upload");
+    xhr.open("POST", "/theory/upload", false);
     xhr.send(formData);
+    window.location.href = '/theory/all';
 }

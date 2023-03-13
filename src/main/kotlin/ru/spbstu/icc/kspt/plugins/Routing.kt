@@ -2,7 +2,6 @@ package ru.spbstu.icc.kspt.plugins
 
 import at.favre.lib.crypto.bcrypt.BCrypt
 import com.aspose.html.converters.Converter
-import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -37,7 +36,8 @@ fun Application.configureRouting() {
             staticBasePackage = "static"
             resources(".")
             static("theory") {
-                resource("theory.js")
+                resource("newLesson.js")
+                resource("lesson.js")
             }
         }
     }
@@ -225,6 +225,8 @@ internal fun Route.registerRoute() {
     }
 }
 
+private fun ApplicationCall.isAdmin() = this.sessions.get<UserPrincipal>()?.role == UserRole.ADMIN
+
 internal fun Route.theoryRoute() {
     val config = environment?.config
     route(CommonRoutes.THEORY) {
@@ -240,6 +242,14 @@ internal fun Route.theoryRoute() {
                             +"Lessons:"
                         }
                         lessons.forEach { lesson ->
+//                            if (call.isAdmin()) {
+//                                postButton {
+//                                    type = ButtonType.button
+//                                    id = "delete-lesson-btn"
+//                                    +"Delete lesson"
+//                                    para
+//                                }
+//                            }
                             a {
                                 href = "/theory/${lesson.id}"
                                 +"Lesson ${lesson.number}: ${lesson.name}"
@@ -250,15 +260,38 @@ internal fun Route.theoryRoute() {
                 }
             }
             get("/{id}") {
-                val id = call.parameters["id"]?.toInt() ?: error("missing id in request")
-                val lesson = dao.lesson(id) ?: error("can't find lesson for id: $id")
+                val lessonId = call.parameters["id"]?.toInt() ?: error("missing id in request")
+                val lesson = dao.lesson(lessonId) ?: error("can't find lesson for id: $lessonId")
 
-                val filePath = "${config.lessonsPath}${File.separator}${lesson.id}${File.separator}${lesson.name}"
+                val filePath = "${config.lessonsPath}${File.separator}${lesson.id}${File.separator}${lesson.name.replace(" ", "_")}"
                 val htmlPath = "$filePath.html"
                 val mdPath = "$filePath.md"
                 Converter.convertMarkdown(mdPath, htmlPath)
                 val htmlFile = File(htmlPath)
-                call.respondText(htmlFile.readText(), ContentType.Text.Html)
+                call.respondHtml {
+                    head {
+                        title = "Lesson"
+                    }
+                    body {
+                        if (call.isAdmin()) {
+                            div {
+                                button {
+                                    type = ButtonType.button
+                                    id = "delete-lesson-btn"
+                                    +"Delete lesson"
+                                }
+                            }
+                            br
+                        }
+                        unsafe {
+                            +htmlFile.readText().substringAfter("<body>").substringBeforeLast("</body>")
+                        }
+                        script {
+                            src = "lesson.js"
+                        }
+                    }
+                }
+//                call.respondText(htmlFile.readText(), ContentType.Text.Html)
                 htmlFile.delete()
             }
         }
@@ -268,7 +301,13 @@ internal fun Route.theoryRoute() {
                 call.respondRedirect("/theory/all")
             }
             post("/remove/{id}") {
-                //TODO() val id = call.parameters["id"]?.toInt() ?: error("missing id in request")
+                val id = call.parameters["id"]?.toInt() ?: error("missing id in request")
+                val lesson = dao.lesson(id) ?: error("can't find lesson for id: $id")
+                val filePath = "${config.lessonsPath}${File.separator}${lesson.id}${File.separator}${lesson.name.replace(" ", "_")}"
+                if (dao.deleteLesson(id)) {
+                    File(filePath).delete()
+                    call.respondRedirect("theory/all")
+                }
             }
             get("/new") {
                 call.respondHtml {
@@ -313,7 +352,7 @@ internal fun Route.theoryRoute() {
                             }
                         }
                         script {
-                            src = "theory.js"
+                            src = "newLesson.js"
                         }
                     }
                 }
@@ -354,7 +393,7 @@ private suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveFile(pat
     val lesson = dao.addLesson(fileName, number) ?: error("cant save file info in database")
     val directory = "$path${File.separator}${lesson.id}"
     File(directory).mkdirs()
-    val file = File("$directory${File.separator}$fileNameParam.md")
+    val file = File("$directory${File.separator}${fileName.replace(" ", "_")}.md")
     fileBytesParam?.let {
         file.writeBytes(it)
     } ?: lessonParam?.let {
