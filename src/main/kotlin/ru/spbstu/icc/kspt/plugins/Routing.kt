@@ -291,7 +291,6 @@ internal fun Route.theoryRoute() {
                         }
                     }
                 }
-//                call.respondText(htmlFile.readText(), ContentType.Text.Html)
                 htmlFile.delete()
             }
         }
@@ -303,9 +302,9 @@ internal fun Route.theoryRoute() {
             post("/remove/{id}") {
                 val id = call.parameters["id"]?.toInt() ?: error("missing id in request")
                 val lesson = dao.lesson(id) ?: error("can't find lesson for id: $id")
-                val filePath = "${config.lessonsPath}${File.separator}${lesson.id}${File.separator}${lesson.name.replace(" ", "_")}"
+                val filePath = "${config.lessonsPath}${File.separator}${lesson.id}"
                 if (dao.deleteLesson(id)) {
-                    File(filePath).delete()
+                    File(filePath).deleteRecursively()
                     call.respondRedirect("theory/all")
                 }
             }
