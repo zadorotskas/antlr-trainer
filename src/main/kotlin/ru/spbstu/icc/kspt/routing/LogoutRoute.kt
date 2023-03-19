@@ -6,8 +6,8 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import ru.spbstu.icc.kspt.CommonRoutes
+import ru.spbstu.icc.kspt.applicationHttpClient
 import ru.spbstu.icc.kspt.model.UserPrincipal
-import ru.spbstu.icc.kspt.plugins.applicationHttpClient
 
 internal fun Routing.logoutRoute() {
     get(CommonRoutes.LOGOUT) {
@@ -21,6 +21,5 @@ internal fun Routing.logoutRoute() {
         }
         call.sessions.clear<UserPrincipal>()
         call.respondRedirect(CommonRoutes.LOGIN)
-
     }
 }

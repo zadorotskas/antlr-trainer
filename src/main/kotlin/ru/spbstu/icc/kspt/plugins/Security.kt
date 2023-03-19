@@ -1,12 +1,8 @@
 package ru.spbstu.icc.kspt.plugins
 
-import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.config.*
@@ -18,6 +14,7 @@ import io.ktor.server.util.*
 import ru.spbstu.icc.kspt.AuthName
 import ru.spbstu.icc.kspt.CommonRoutes
 import ru.spbstu.icc.kspt.Cookies
+import ru.spbstu.icc.kspt.applicationHttpClient
 import ru.spbstu.icc.kspt.extension.oauthClientId
 import ru.spbstu.icc.kspt.extension.oauthClientSecret
 import ru.spbstu.icc.kspt.model.UserInfo
@@ -113,39 +110,5 @@ private fun createRedirectUrl(call: ApplicationCall): Url {
         path(CommonRoutes.AUTH)
         parameters.append("redirectUrl", call.request.uri)
         build()
-    }
-}
-
-//private fun AuthenticationConfig.configureFormAuth() {
-//    form(AuthName.FORM) {
-//        userParamName = FormFields.USERNAME
-//        passwordParamName = FormFields.PASSWORD
-//        challenge {
-//            val errors = call.authentication.allFailures
-//            when (errors.singleOrNull()) {
-//                AuthenticationFailedCause.InvalidCredentials ->
-//                    call.respondRedirect("${CommonRoutes.LOGIN}?invalid")
-//
-//                AuthenticationFailedCause.NoCredentials ->
-//                    call.respondRedirect("${CommonRoutes.LOGIN}?no")
-//
-//                else ->
-//                    call.respondRedirect(CommonRoutes.LOGIN)
-//            }
-//        }
-//        validate { cred: UserPasswordCredential ->
-//            val user = dao.user(cred.name)
-//            if (user == null || !BCrypt.verifyer().verify(cred.password.toCharArray(), user.hashedPassword).verified) {
-//                null
-//            } else {
-//                UserPrincipal(cred.name, user.role)
-//            }
-//        }
-//    }
-//}
-
-val applicationHttpClient = HttpClient(CIO) {
-    install(ContentNegotiation) {
-        json()
     }
 }

@@ -12,6 +12,8 @@ import ru.spbstu.icc.kspt.CommonRoutes
 import ru.spbstu.icc.kspt.dao
 import ru.spbstu.icc.kspt.extension.lessonsPath
 import ru.spbstu.icc.kspt.extension.uploadAndSaveFile
+import ru.spbstu.icc.kspt.forms.allLessonsForm
+import ru.spbstu.icc.kspt.forms.lessonForm
 import ru.spbstu.icc.kspt.isAdmin
 import java.io.File
 
@@ -22,29 +24,7 @@ internal fun Route.lessonRoute() {
             get("/all") {
                 val lessons = dao.allLessons()
                 call.respondHtml {
-                    head {
-                        title = "Lessons"
-                    }
-                    body {
-                        h1 {
-                            +"Lessons:"
-                        }
-                        lessons.forEach { lesson ->
-//                            if (call.isAdmin()) {
-//                                postButton {
-//                                    type = ButtonType.button
-//                                    id = "delete-lesson-btn"
-//                                    +"Delete lesson"
-//                                    para
-//                                }
-//                            }
-                            a {
-                                href = "/theory/${lesson.id}"
-                                +"Lesson ${lesson.number}: ${lesson.name}"
-                            }
-                            br
-                        }
-                    }
+                    allLessonsForm(lessons)
                 }
             }
             get("/{id}") {
@@ -56,28 +36,9 @@ internal fun Route.lessonRoute() {
                 val mdPath = "$filePath.md"
                 Converter.convertMarkdown(mdPath, htmlPath)
                 val htmlFile = File(htmlPath)
+                val lessonContent = htmlFile.readText().substringAfter("<body>").substringBeforeLast("</body>")
                 call.respondHtml {
-                    head {
-                        title = "Lesson"
-                    }
-                    body {
-                        if (call.isAdmin()) {
-                            div {
-                                button {
-                                    type = ButtonType.button
-                                    id = "delete-lesson-btn"
-                                    +"Delete lesson"
-                                }
-                            }
-                            br
-                        }
-                        unsafe {
-                            +htmlFile.readText().substringAfter("<body>").substringBeforeLast("</body>")
-                        }
-                        script {
-                            src = "lesson.js"
-                        }
-                    }
+                    lessonForm(call.isAdmin(), lessonContent)
                 }
                 htmlFile.delete()
             }
