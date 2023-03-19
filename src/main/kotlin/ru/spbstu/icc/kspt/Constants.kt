@@ -8,6 +8,7 @@ object FormFields {
 object AuthName {
     const val SESSION = "session"
     const val FORM = "form"
+    const val OAUTH = "oauth-google"
     const val SESSION_ADMIN = "admin"
 }
 
