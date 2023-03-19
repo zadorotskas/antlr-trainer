@@ -1,4 +1,4 @@
-const registerButton = document.getElementById('register-btn');
+const registerButton = document.getElementById('login-btn');
 registerButton.addEventListener('click', () => {
-  window.location.href = '/register';
+  window.location.href = '/profile';
 });

@@ -7,7 +7,6 @@ object FormFields {
 
 object AuthName {
     const val SESSION = "session"
-    const val FORM = "form"
     const val OAUTH = "oauth-google"
     const val SESSION_ADMIN = "admin"
 }
@@ -18,6 +17,7 @@ object CommonRoutes {
     const val PROFILE = "/profile"
     const val REGISTER = "/register"
     const val THEORY = "/theory"
+    const val AUTH = "/auth"
 }
 
 object Cookies {
