@@ -24,8 +24,3 @@ fun Application.configureRouting() {
         }
     }
 }
-
-
-
-
-
