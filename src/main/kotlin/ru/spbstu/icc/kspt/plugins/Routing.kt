@@ -12,7 +12,6 @@ fun Application.configureRouting() {
         loginRoute()
         logoutRoute()
         profileRoute()
-        registerRoute()
         lessonRoute()
 
         static("/") {

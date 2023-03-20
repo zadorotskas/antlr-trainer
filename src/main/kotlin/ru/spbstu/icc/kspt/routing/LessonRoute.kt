@@ -6,12 +6,12 @@ import io.ktor.server.auth.*
 import io.ktor.server.html.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.html.*
 import ru.spbstu.icc.kspt.AuthName
 import ru.spbstu.icc.kspt.CommonRoutes
 import ru.spbstu.icc.kspt.dao
 import ru.spbstu.icc.kspt.extension.lessonsPath
 import ru.spbstu.icc.kspt.extension.uploadAndSaveFile
+import ru.spbstu.icc.kspt.forms.addLessonForm
 import ru.spbstu.icc.kspt.forms.allLessonsForm
 import ru.spbstu.icc.kspt.forms.lessonForm
 import ru.spbstu.icc.kspt.isAdmin
@@ -59,50 +59,7 @@ internal fun Route.lessonRoute() {
             }
             get("/new") {
                 call.respondHtml {
-                    body {
-                        form {
-                            p {
-                                +"Add new lesson"
-                            }
-                            div {
-                                input {
-                                    type = InputType.text
-                                    id = "lesson-number-input"
-                                    placeholder = "Number"
-                                }
-                                input {
-                                    type = InputType.text
-                                    id = "lesson-name-input"
-                                    placeholder = "Name"
-                                }
-                            }
-                            textArea {
-                                id = "lesson-text-area"
-                                placeholder = "Lesson content"
-                            }
-                            div {
-                                button {
-                                    id = "upload-theory-btn"
-                                    type = ButtonType.button
-                                    +"Add lesson"
-                                }
-                            }
-                            div {
-                                input {
-                                    type = InputType.file
-                                    id = "theory-file"
-                                }
-                                button {
-                                    id = "upload-theory-from-file-btn"
-                                    type = ButtonType.button
-                                    +"Upload from file"
-                                }
-                            }
-                        }
-                        script {
-                            src = "newLesson.js"
-                        }
-                    }
+                    addLessonForm()
                 }
             }
         }
