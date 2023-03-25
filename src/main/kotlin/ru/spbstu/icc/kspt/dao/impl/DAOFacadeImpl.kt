@@ -69,4 +69,24 @@ class DAOFacadeImpl : DAOFacade {
             number = row[Lessons.number]
         )
     }
+
+    override suspend fun admin(name: String): Admin? = dbQuery {
+        Admins
+            .select { Admins.userName eq name }
+            .map(::resultRowToAdmin)
+            .singleOrNull()
+    }
+
+    override suspend fun addAdmin(name: String): Admin? = dbQuery {
+        Admins.insert {
+            it[userName] = name
+        }.resultedValues?.singleOrNull()?.let(::resultRowToAdmin)
+    }
+
+    private fun resultRowToAdmin(row: ResultRow): Admin {
+        return Admin(
+            id = row[Admins.id],
+            userName = row[Admins.userName]
+        )
+    }
 }

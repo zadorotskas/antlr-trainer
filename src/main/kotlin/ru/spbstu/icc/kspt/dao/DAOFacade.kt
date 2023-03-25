@@ -1,5 +1,6 @@
 package ru.spbstu.icc.kspt.dao
 
+import ru.spbstu.icc.kspt.model.Admin
 import ru.spbstu.icc.kspt.model.Lesson
 import ru.spbstu.icc.kspt.model.User
 import ru.spbstu.icc.kspt.model.UserRole
@@ -14,4 +15,7 @@ interface DAOFacade {
     suspend fun allLessons(): List<Lesson>
     suspend fun addLesson(name: String, number: Int): Lesson?
     suspend fun deleteLesson(id: Int): Boolean
+
+    suspend fun admin(name: String): Admin?
+    suspend fun addAdmin(name: String): Admin?
 }

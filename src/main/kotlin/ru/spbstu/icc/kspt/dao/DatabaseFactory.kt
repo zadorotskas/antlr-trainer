@@ -6,6 +6,7 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.spbstu.icc.kspt.model.Admins
 import ru.spbstu.icc.kspt.model.Lessons
 import ru.spbstu.icc.kspt.model.TaskSolutions
 import ru.spbstu.icc.kspt.model.Users
@@ -27,6 +28,7 @@ object DatabaseFactory {
             SchemaUtils.create(Users)
             SchemaUtils.create(Lessons)
             SchemaUtils.create(TaskSolutions)
+            SchemaUtils.create(Admins)
         }
     }
 

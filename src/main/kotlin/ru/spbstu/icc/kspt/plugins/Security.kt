@@ -11,10 +11,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import io.ktor.server.util.*
-import ru.spbstu.icc.kspt.AuthName
-import ru.spbstu.icc.kspt.CommonRoutes
-import ru.spbstu.icc.kspt.Cookies
-import ru.spbstu.icc.kspt.applicationHttpClient
+import ru.spbstu.icc.kspt.*
 import ru.spbstu.icc.kspt.extension.oauthClientId
 import ru.spbstu.icc.kspt.extension.oauthClientSecret
 import ru.spbstu.icc.kspt.model.UserInfo
@@ -53,7 +50,11 @@ fun Application.configureSecurity() {
                 }
                 val userInfo: UserInfo = response.body()
 
-                call.sessions.set(UserPrincipal(userInfo.name, UserRole.ADMIN, principal!!.state!!, principal.accessToken))
+                val role = if (dao.admin(userInfo.name) != null) {
+                    UserRole.ADMIN
+                } else UserRole.STUDENT
+
+                call.sessions.set(UserPrincipal(userInfo.name, role, principal!!.state!!, principal.accessToken))
                 val redirect = redirects[principal.state!!]
                 call.respondRedirect(redirect!!)
             }
