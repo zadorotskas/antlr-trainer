@@ -39,56 +39,7 @@ internal fun HTML.lessonForm(isAdmin: Boolean, lessonContent: String) {
         unsafe {
             +lessonContent
         }
-        h1 {
-            +"Solution"
-        }
-        div {
-            textArea {
-                id = "g4-text-area"
-                placeholder = "g4 grammar"
-            }
-        }
-        div {
-            textArea {
-                id = "main-text-area"
-                placeholder = "Main java class"
-            }
-        }
-        checkBoxInput {
-            checked = false
-            id = "add-listener-checkbox"
-            +"Add listener file"
-        }
-        div {
-            id = "listener-div"
-            textArea {
-                id = "listener-text-area"
-                placeholder = "Listener java class"
-            }
-        }
-        checkBoxInput {
-            checked = false
-            id = "add-visitor-checkbox"
-            +"Add visitor file"
-        }
-        div {
-            id = "visitor-div"
-            textArea {
-                id = "visitor-text-area"
-                placeholder = "Visitor java class"
-            }
-        }
-        div {
-            input {
-                type = InputType.file
-                id = "solution-files"
-            }
-            button {
-                id = "upload-solution-from-file-btn"
-                type = ButtonType.button
-                +"Upload from files"
-            }
-        }
+        solution()
         script {
             src = "lesson.js"
         }
@@ -97,47 +48,91 @@ internal fun HTML.lessonForm(isAdmin: Boolean, lessonContent: String) {
 
 internal fun HTML.addLessonForm() {
     body {
-        form {
-            p {
-                +"Add new lesson"
+        h1 {
+            +"Add new lesson"
+        }
+        div {
+            input {
+                type = InputType.text
+                id = "lesson-number-input"
+                placeholder = "Number"
             }
-            div {
-                input {
-                    type = InputType.text
-                    id = "lesson-number-input"
-                    placeholder = "Number"
-                }
-                input {
-                    type = InputType.text
-                    id = "lesson-name-input"
-                    placeholder = "Name"
-                }
+            input {
+                type = InputType.text
+                id = "lesson-name-input"
+                placeholder = "Name"
             }
-            textArea {
-                id = "lesson-text-area"
-                placeholder = "Lesson content"
+        }
+        textArea {
+            id = "lesson-text-area"
+            placeholder = "Lesson content"
+        }
+        div {
+            input {
+                type = InputType.file
+                id = "lesson-file"
             }
-            div {
-                button {
-                    id = "upload-lesson-btn"
-                    type = ButtonType.button
-                    +"Add lesson"
-                }
-            }
-            div {
-                input {
-                    type = InputType.file
-                    id = "lesson-file"
-                }
-                button {
-                    id = "upload-lesson-from-file-btn"
-                    type = ButtonType.button
-                    +"Upload from file"
-                }
+        }
+        solution()
+        br
+        div {
+            button {
+                id = "upload-lesson-btn"
+                type = ButtonType.button
+                +"Add lesson"
             }
         }
         script {
             src = "newLesson.js"
+        }
+    }
+}
+
+fun BODY.solution() {
+    h1 {
+        +"Solution"
+    }
+    div {
+        textArea {
+            id = "g4-text-area"
+            placeholder = "g4 grammar"
+        }
+    }
+    div {
+        textArea {
+            id = "main-text-area"
+            placeholder = "Main java class"
+        }
+    }
+    checkBoxInput {
+        checked = false
+        id = "add-listener-checkbox"
+        +"Add listener file"
+    }
+    div {
+        id = "listener-div"
+        textArea {
+            id = "listener-text-area"
+            placeholder = "Listener java class"
+        }
+    }
+    checkBoxInput {
+        checked = false
+        id = "add-visitor-checkbox"
+        +"Add visitor file"
+    }
+    div {
+        id = "visitor-div"
+        textArea {
+            id = "visitor-text-area"
+            placeholder = "Visitor java class"
+        }
+    }
+    div {
+        input {
+            type = InputType.file
+            id = "solution-files"
+            multiple = true
         }
     }
 }
