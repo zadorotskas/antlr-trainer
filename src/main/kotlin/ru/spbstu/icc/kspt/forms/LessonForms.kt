@@ -39,6 +39,56 @@ internal fun HTML.lessonForm(isAdmin: Boolean, lessonContent: String) {
         unsafe {
             +lessonContent
         }
+        h1 {
+            +"Solution"
+        }
+        div {
+            textArea {
+                id = "g4-text-area"
+                placeholder = "g4 grammar"
+            }
+        }
+        div {
+            textArea {
+                id = "main-text-area"
+                placeholder = "Main java class"
+            }
+        }
+        checkBoxInput {
+            checked = false
+            id = "add-listener-checkbox"
+            +"Add listener file"
+        }
+        div {
+            id = "listener-div"
+            textArea {
+                id = "listener-text-area"
+                placeholder = "Listener java class"
+            }
+        }
+        checkBoxInput {
+            checked = false
+            id = "add-visitor-checkbox"
+            +"Add visitor file"
+        }
+        div {
+            id = "visitor-div"
+            textArea {
+                id = "visitor-text-area"
+                placeholder = "Visitor java class"
+            }
+        }
+        div {
+            input {
+                type = InputType.file
+                id = "solution-files"
+            }
+            button {
+                id = "upload-solution-from-file-btn"
+                type = ButtonType.button
+                +"Upload from files"
+            }
+        }
         script {
             src = "lesson.js"
         }
