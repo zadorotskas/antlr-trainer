@@ -17,7 +17,7 @@ fun Application.configureRouting() {
         static("/") {
             staticBasePackage = "static"
             resources(".")
-            static("theory") {
+            static("lesson") {
                 resource("newLesson.js")
                 resource("lesson.js")
             }

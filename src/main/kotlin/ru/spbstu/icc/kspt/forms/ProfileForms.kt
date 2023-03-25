@@ -16,9 +16,9 @@ internal fun HTML.profileForm(principal: UserPrincipal) {
             }
             div {
                 button {
-                    id = "add-theory-btn"
+                    id = "add-lesson-btn"
                     type = ButtonType.button
-                    +"Add theory"
+                    +"Add lesson"
                 }
             }
         }

@@ -19,7 +19,7 @@ import java.io.File
 
 internal fun Route.lessonRoute() {
     val config = environment?.config
-    route(CommonRoutes.THEORY) {
+    route(CommonRoutes.LESSON) {
         authenticate(AuthName.SESSION) {
             get("/all") {
                 val lessons = dao.allLessons()
@@ -46,7 +46,7 @@ internal fun Route.lessonRoute() {
         authenticate(AuthName.SESSION_ADMIN) {
             post("/upload") {
                 uploadAndSaveFile(config.lessonsPath)
-                call.respondRedirect("/theory/all")
+                call.respondRedirect("/lesson/all")
             }
             post("/remove/{id}") {
                 val id = call.parameters["id"]?.toInt() ?: error("missing id in request")
@@ -54,7 +54,7 @@ internal fun Route.lessonRoute() {
                 val filePath = "${config.lessonsPath}${File.separator}${lesson.id}"
                 if (dao.deleteLesson(id)) {
                     File(filePath).deleteRecursively()
-                    call.respondRedirect("theory/all")
+                    call.respondRedirect("lesson/all")
                 }
             }
             get("/new") {

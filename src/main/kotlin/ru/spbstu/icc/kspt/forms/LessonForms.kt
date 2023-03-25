@@ -13,7 +13,7 @@ internal fun HTML.allLessonsForm(lessons: List<Lesson>) {
         }
         lessons.forEach { lesson ->
             a {
-                href = "/theory/${lesson.id}"
+                href = "/lesson/${lesson.id}"
                 +"Lesson ${lesson.number}: ${lesson.name}"
             }
             br
@@ -69,7 +69,7 @@ internal fun HTML.addLessonForm() {
             }
             div {
                 button {
-                    id = "upload-theory-btn"
+                    id = "upload-lesson-btn"
                     type = ButtonType.button
                     +"Add lesson"
                 }
@@ -77,10 +77,10 @@ internal fun HTML.addLessonForm() {
             div {
                 input {
                     type = InputType.file
-                    id = "theory-file"
+                    id = "lesson-file"
                 }
                 button {
-                    id = "upload-theory-from-file-btn"
+                    id = "upload-lesson-from-file-btn"
                     type = ButtonType.button
                     +"Upload from file"
                 }
