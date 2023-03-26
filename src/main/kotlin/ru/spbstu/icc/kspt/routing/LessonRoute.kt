@@ -10,7 +10,7 @@ import ru.spbstu.icc.kspt.AuthName
 import ru.spbstu.icc.kspt.CommonRoutes
 import ru.spbstu.icc.kspt.dao
 import ru.spbstu.icc.kspt.extension.lessonsPath
-import ru.spbstu.icc.kspt.extension.uploadAndSaveFile
+import ru.spbstu.icc.kspt.extension.uploadAndSaveNewLesson
 import ru.spbstu.icc.kspt.forms.addLessonForm
 import ru.spbstu.icc.kspt.forms.allLessonsForm
 import ru.spbstu.icc.kspt.forms.lessonForm
@@ -45,7 +45,7 @@ internal fun Route.lessonRoute() {
         }
         authenticate(AuthName.SESSION_ADMIN) {
             post("/upload") {
-                uploadAndSaveFile(config.lessonsPath)
+                uploadAndSaveNewLesson(config.lessonsPath)
                 call.respondRedirect("/lesson/all")
             }
             post("/remove/{id}") {

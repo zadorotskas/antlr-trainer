@@ -6,8 +6,9 @@ import io.ktor.server.request.*
 import io.ktor.util.pipeline.*
 import ru.spbstu.icc.kspt.dao
 import java.io.File
+import java.util.*
 
-internal suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveFile(path: String) {
+internal suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveNewLesson(path: String) {
     val multipart = call.receiveMultipart()
 
     var lessonFileBytesParam: ByteArray? = null
@@ -75,10 +76,15 @@ class Solution {
     var listenerString: String? = null
     var visitorString: String? = null
 
+    var filesName: String? = null
+
     fun addFile(fileName: String?, bytes: ByteArray) {
         fileName ?: error("missing file name")
         when {
-            fileName.endsWith(".g4") -> g4File = bytes
+            fileName.endsWith(".g4") -> {
+                filesName = fileName.substringBeforeLast(".")
+                g4File = bytes
+            }
             fileName == "Main.java" -> mainFile = bytes
             fileName.lowercase().contains("listener") -> listenerFile = bytes
             fileName.lowercase().contains("visitor") -> visitorFile = bytes
@@ -92,10 +98,13 @@ class Solution {
     }
 
     fun createFiles(parentFolder: File) {
-        parentFolder.resolve("solution.g4").create(g4String, g4File)
-        parentFolder.resolve("SolutionMain.java").create(mainString, mainFile)
-        parentFolder.resolve("SolutionListener.java").create(listenerString, listenerFile)
-        parentFolder.resolve("SolutionVisitor.java").create(visitorString, visitorFile)
+        if (filesName == null) {
+            filesName = g4String?.trim()?.split(" ")?.get(1)?.substringBeforeLast(";") ?: error("cannot receive files name")
+        }
+        parentFolder.resolve("$filesName.g4").create(g4String, g4File)
+        parentFolder.resolve("${capitalize(filesName!!)}Main.java").create(mainString, mainFile)
+        parentFolder.resolve("${capitalize(filesName!!)}Listener.java").create(listenerString, listenerFile)
+        parentFolder.resolve("${capitalize(filesName!!)}Visitor.java").create(visitorString, visitorFile)
     }
 
     private fun File.create(str: String?, bytes: ByteArray?) {
@@ -104,5 +113,9 @@ class Solution {
         } ?: str?.let {
             this.writeText(it)
         }
+    }
+
+    private fun capitalize(string: String): String {
+        return string.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
     }
 }
