@@ -6,8 +6,11 @@ import io.ktor.server.auth.*
 import io.ktor.server.html.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import ru.spbstu.icc.kspt.AuthName
 import ru.spbstu.icc.kspt.CommonRoutes
+import ru.spbstu.icc.kspt.build.ParserBuild
 import ru.spbstu.icc.kspt.dao
 import ru.spbstu.icc.kspt.extension.lessonsPath
 import ru.spbstu.icc.kspt.extension.uploadAndSaveNewLesson
@@ -45,7 +48,11 @@ internal fun Route.lessonRoute() {
         }
         authenticate(AuthName.SESSION_ADMIN) {
             post("/upload") {
-                uploadAndSaveNewLesson(config.lessonsPath)
+                val lessonPath = config.lessonsPath
+                val grammarFile = uploadAndSaveNewLesson(lessonPath)
+                withContext(Dispatchers.IO) {
+                    ParserBuild.buildSolution(grammarFile.parentFile, grammarFile.name.substringBeforeLast("."), "C:\\Users\\zador\\Documents\\antlr\\antlr-4.8-complete.jar")
+                }
                 call.respondRedirect("/lesson/all")
             }
             post("/remove/{id}") {

@@ -6,9 +6,8 @@ import io.ktor.server.request.*
 import io.ktor.util.pipeline.*
 import ru.spbstu.icc.kspt.dao
 import java.io.File
-import java.util.*
 
-internal suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveNewLesson(path: String) {
+internal suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveNewLesson(path: String): File {
     val multipart = call.receiveMultipart()
 
     var lessonFileBytesParam: ByteArray? = null
@@ -62,7 +61,7 @@ internal suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveNewLess
     val solutionFolder = file.parentFile.resolve("solution")
     solutionFolder.mkdirs()
     solution.checkHasCorrectFiles()
-    solution.createFiles(solutionFolder)
+    return solution.createFiles(solutionFolder)
 }
 
 class Solution {
@@ -97,14 +96,16 @@ class Solution {
         if (mainFile == null && mainString == null) error("missing main file")
     }
 
-    fun createFiles(parentFolder: File) {
+    fun createFiles(parentFolder: File): File {
         if (filesName == null) {
             filesName = g4String?.trim()?.split(" ")?.get(1)?.substringBeforeLast(";") ?: error("cannot receive files name")
         }
-        parentFolder.resolve("$filesName.g4").create(g4String, g4File)
-        parentFolder.resolve("${capitalize(filesName!!)}Main.java").create(mainString, mainFile)
+        parentFolder.resolve("Main.java").create(mainString, mainFile)
         parentFolder.resolve("${capitalize(filesName!!)}Listener.java").create(listenerString, listenerFile)
         parentFolder.resolve("${capitalize(filesName!!)}Visitor.java").create(visitorString, visitorFile)
+        return parentFolder.resolve("$filesName.g4").also {
+            it.create(g4String, g4File)
+        }
     }
 
     private fun File.create(str: String?, bytes: ByteArray?) {
@@ -113,9 +114,5 @@ class Solution {
         } ?: str?.let {
             this.writeText(it)
         }
-    }
-
-    private fun capitalize(string: String): String {
-        return string.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
     }
 }
