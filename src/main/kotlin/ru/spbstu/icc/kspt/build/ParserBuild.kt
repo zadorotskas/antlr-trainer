@@ -1,7 +1,6 @@
 package ru.spbstu.icc.kspt.build
 
 import io.ktor.util.logging.*
-import ru.spbstu.icc.kspt.extension.capitalize
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStream
@@ -27,8 +26,6 @@ object ParserBuild {
         if (handleProcess(Runtime.getRuntime().exec("javac -cp $antlrLibPath $classes")) != 0) {
             error("javac run failed")
         }
-
-        //return tempDirectory.resolve("Main.java").toFile()
 
         return buildJar(
             tempDirectory.resolve("jar").toFile(),
@@ -58,11 +55,11 @@ object ParserBuild {
     }
 
     private fun buildJar(outputDir: File, inputDir: File, jarName: String, antlrLibPath: String): File {
-        val jarPath = outputDir.resolve(jarName)
+        val jarPath = outputDir.resolve("$jarName.jar")
 
         jarPath.parentFile.mkdirs()
         JarBuilder().use {
-            it.setMainClass("${capitalize(jarName)}.java")
+            it.setMainClass("Main")//it.setMainClass("${capitalize(jarName)}.java")
             it.openJar(jarPath)
             it.add(
                 inputDir,

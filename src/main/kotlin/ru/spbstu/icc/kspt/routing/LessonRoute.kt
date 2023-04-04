@@ -12,6 +12,7 @@ import ru.spbstu.icc.kspt.AuthName
 import ru.spbstu.icc.kspt.CommonRoutes
 import ru.spbstu.icc.kspt.build.ParserBuild
 import ru.spbstu.icc.kspt.dao
+import ru.spbstu.icc.kspt.extension.antlrLibPath
 import ru.spbstu.icc.kspt.extension.lessonsPath
 import ru.spbstu.icc.kspt.extension.uploadAndSaveNewLesson
 import ru.spbstu.icc.kspt.forms.addLessonForm
@@ -50,9 +51,10 @@ internal fun Route.lessonRoute() {
             post("/upload") {
                 val lessonPath = config.lessonsPath
                 val grammarFile = uploadAndSaveNewLesson(lessonPath)
-                withContext(Dispatchers.IO) {
-                    ParserBuild.buildSolution(grammarFile.parentFile, grammarFile.name.substringBeforeLast("."), "/Users/nzadorotskas/Downloads/antlr4-4.8-1-complete.jar")
+                val jarFile = withContext(Dispatchers.IO) {
+                    ParserBuild.buildSolution(grammarFile.parentFile, grammarFile.name.substringBeforeLast("."), config.antlrLibPath)
                 }
+                jarFile.listFiles()
                 call.respondRedirect("/lesson/all")
             }
             post("/remove/{id}") {

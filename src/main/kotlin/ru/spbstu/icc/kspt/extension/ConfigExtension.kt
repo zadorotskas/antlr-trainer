@@ -10,3 +10,6 @@ internal val ApplicationConfig?.oauthClientId: String
 
 internal val ApplicationConfig?.oauthClientSecret: String
     get() = this?.propertyOrNull("ktor.deployment.clientSecret")?.getString() ?: error("missing clientSecret in config")
+
+internal val ApplicationConfig?.antlrLibPath: String
+    get() = this?.propertyOrNull("build.antlrLibPath")?.getString() ?: error("missing antlrLibPath in config")
