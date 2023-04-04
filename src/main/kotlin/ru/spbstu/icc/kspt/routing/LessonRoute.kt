@@ -51,7 +51,7 @@ internal fun Route.lessonRoute() {
                 val lessonPath = config.lessonsPath
                 val grammarFile = uploadAndSaveNewLesson(lessonPath)
                 withContext(Dispatchers.IO) {
-                    ParserBuild.buildSolution(grammarFile.parentFile, grammarFile.name.substringBeforeLast("."), "C:\\Users\\zador\\Documents\\antlr\\antlr-4.8-complete.jar")
+                    ParserBuild.buildSolution(grammarFile.parentFile, grammarFile.name.substringBeforeLast("."), "/Users/nzadorotskas/Downloads/antlr4-4.8-1-complete.jar")
                 }
                 call.respondRedirect("/lesson/all")
             }

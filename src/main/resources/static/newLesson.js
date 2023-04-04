@@ -5,7 +5,7 @@ uploadLesson.addEventListener('click', () => {
     if (lessonFile) {
         formData.append("lesson", lessonFile);
     } else {
-        formData.append("lesson", document.getElementById("lesson-text-area").value);
+        if (!appendValueToFormDataIfNotEmpty("lesson", document.getElementById("lesson-text-area").value)) return
     }
 
     var solutionFiles = document.getElementById("solution-files").files
@@ -14,13 +14,13 @@ uploadLesson.addEventListener('click', () => {
             formData.append("solutionFiles", solutionFiles[i]);
         }
     } else {
-        formData.append("g4", document.getElementById("g4-text-area").value);
-        formData.append("main", document.getElementById("main-text-area").value);
+        if (!appendValueToFormDataIfNotEmpty("g4", document.getElementById("g4-text-area").value)) return
+        if (!appendValueToFormDataIfNotEmpty("main", document.getElementById("main-text-area").value)) return
         if (addListenerCheckbox.checked) {
-            formData.append("listener", document.getElementById("listener-text-area").value);
+            appendValueToFormDataIfNotEmpty("listener", document.getElementById("listener-text-area").value);
         }
         if (addVisitorCheckbox.checked) {
-            formData.append("visitor", document.getElementById("visitor-text-area").value);
+            appendValueToFormDataIfNotEmpty("visitor", document.getElementById("visitor-text-area").value);
         }
     }
 
@@ -28,12 +28,20 @@ uploadLesson.addEventListener('click', () => {
 });
 
 const sendLesson = (formData) => {
-    formData.append("number", document.getElementById("lesson-number-input").value);
-    formData.append("name", document.getElementById("lesson-name-input").value);
+    if (!appendValueToFormDataIfNotEmpty(formData, "number", document.getElementById("lesson-number-input").value)) return
+    if (!appendValueToFormDataIfNotEmpty(formData, "name", document.getElementById("lesson-name-input").value)) return
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/lesson/upload", false);
     xhr.send(formData);
     window.location.href = '/lesson/all';
+}
+
+const appendValueToFormDataIfNotEmpty = (formData, name, value) => {
+    if (value.length == 0) {
+        return false
+    }
+    formData.append(name, value);
+    return true
 }
 
 const addListenerDiv = document.getElementById('listener-div');
