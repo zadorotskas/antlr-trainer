@@ -75,6 +75,8 @@ internal fun HTML.addLessonForm() {
         }
         solution()
         br
+        tests()
+        br
         div {
             button {
                 id = "upload-lesson-btn"
@@ -132,6 +134,19 @@ fun BODY.solution() {
         input {
             type = InputType.file
             id = "solution-files"
+            multiple = true
+        }
+    }
+}
+
+fun BODY.tests() {
+    h1 {
+        +"Tests"
+    }
+    div {
+        input {
+            type = InputType.file
+            id = "test-files"
             multiple = true
         }
     }

@@ -1,6 +1,5 @@
 package ru.spbstu.icc.kspt.build
 
-import io.ktor.util.logging.*
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStream
@@ -10,12 +9,11 @@ import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 
 object ParserBuild {
-    private val Logger: Logger = KtorSimpleLogger("solution.build")
-
     fun buildSolution(solutionDirectory: File, grammarName: String, antlrLibPath: String): File {
         val tempDirectory = createTempDirectory("antlr-trainer")
-        if (handleProcess(Runtime.getRuntime().exec("java -cp $antlrLibPath org.antlr.v4.Tool -o $tempDirectory  ${solutionDirectory.resolve("$grammarName.g4")}")) != 0) {
-            error("antlr run failed")
+        var message: String? = handleProcess(Runtime.getRuntime().exec("java -cp $antlrLibPath org.antlr.v4.Tool -o $tempDirectory  ${solutionDirectory.resolve("$grammarName.g4")}"))
+        if (message != null) {
+            error("antlr run failed with message: $message")
         }
 
         Files.copy(solutionDirectory.resolve("Main.java").toPath(), tempDirectory.resolve("Main.java"))
@@ -23,8 +21,9 @@ object ParserBuild {
             .filter { it.name.endsWith(".java") }
             .joinToString(separator = " ") { "$tempDirectory${File.separatorChar}${it.fileName}" }
 
-        if (handleProcess(Runtime.getRuntime().exec("javac -cp $antlrLibPath $classes")) != 0) {
-            error("javac run failed")
+        message = handleProcess(Runtime.getRuntime().exec("javac -cp $antlrLibPath $classes"))
+        if (message != null) {
+            error("javac run failed with message: $message")
         }
 
         return buildJar(
@@ -35,15 +34,12 @@ object ParserBuild {
         )
     }
 
-    private fun handleProcess(process: Process): Int {
+    private fun handleProcess(process: Process): String? {
         process.waitFor()
 
-        val output = getInputStreamContent(process.inputStream)
-        if (output.isNotEmpty()) Logger.info(output)
-
         val error = getInputStreamContent(process.errorStream)
-        if (error.isNotEmpty()) Logger.error(error)
-        return process.exitValue()
+        if (error.isNotEmpty()) return error
+        return null
     }
 
     private fun getInputStreamContent(inputStream: InputStream): String {
@@ -59,7 +55,7 @@ object ParserBuild {
 
         jarPath.parentFile.mkdirs()
         JarBuilder().use {
-            it.setMainClass("Main")//it.setMainClass("${capitalize(jarName)}.java")
+            it.setMainClass("Main")
             it.openJar(jarPath)
             it.add(
                 inputDir,

@@ -24,6 +24,13 @@ uploadLesson.addEventListener('click', () => {
         }
     }
 
+    var testFiles = document.getElementById("test-files").files
+    if (testFiles && testFiles.length != 0) {
+        for (var i = 0; i < testFiles.length; i++) {
+            formData.append("testFiles", testFiles[i]);
+        }
+    }
+
     sendLesson(formData)
 });
 

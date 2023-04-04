@@ -19,6 +19,7 @@ import ru.spbstu.icc.kspt.forms.addLessonForm
 import ru.spbstu.icc.kspt.forms.allLessonsForm
 import ru.spbstu.icc.kspt.forms.lessonForm
 import ru.spbstu.icc.kspt.isAdmin
+import ru.spbstu.icc.kspt.runner.TestRunner
 import java.io.File
 
 internal fun Route.lessonRoute() {
@@ -54,8 +55,11 @@ internal fun Route.lessonRoute() {
                 val jarFile = withContext(Dispatchers.IO) {
                     ParserBuild.buildSolution(grammarFile.parentFile, grammarFile.name.substringBeforeLast("."), config.antlrLibPath)
                 }
-                jarFile.listFiles()
-                call.respondRedirect("/lesson/all")
+                val result = TestRunner.runAndSave(jarFile, grammarFile.parentFile.parentFile.resolve("test"))
+                jarFile.parentFile.parentFile.deleteRecursively()
+                result
+                    ?.let { call.respond(it) } ?:
+                    call.respondRedirect("/lesson/all")
             }
             post("/remove/{id}") {
                 val id = call.parameters["id"]?.toInt() ?: error("missing id in request")

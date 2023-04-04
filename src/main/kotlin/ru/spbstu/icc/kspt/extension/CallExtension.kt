@@ -17,6 +17,7 @@ internal suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveNewLess
     var lessonParam: String? = null
 
     val solution = Solution()
+    val testFiles = mutableMapOf<String, ByteArray>()
 
     multipart.forEachPart { part ->
         when (part) {
@@ -24,6 +25,7 @@ internal suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveNewLess
                 when (part.name) {
                     "lesson" -> lessonFileBytesParam = part.streamProvider().readBytes()
                     "solutionFiles" -> solution.addFile(part.originalFileName, part.streamProvider().readBytes())
+                    "testFiles" -> testFiles[part.originalFileName!!] = part.streamProvider().readBytes()
                 }
             }
 
@@ -57,6 +59,12 @@ internal suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveNewLess
     } ?: lessonParam?.let {
         file.writeText(it)
     } ?: error("does not receive lesson file")
+
+    testFiles.forEach { (name, bytes) ->
+        val testDirectory = "$directory${File.separator}test"
+        File(testDirectory).mkdirs()
+        File("$testDirectory${File.separator}$name").writeBytes(bytes)
+    }
 
     val solutionFolder = file.parentFile.resolve("solution")
     solutionFolder.mkdirs()
