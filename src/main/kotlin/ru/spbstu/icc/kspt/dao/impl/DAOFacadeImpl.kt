@@ -111,6 +111,20 @@ class DAOFacadeImpl : DAOFacade {
         TaskSolutions.select { (TaskSolutions.lessonId eq lessonId) and (TaskSolutions.userName eq userName) }.count()
     }
 
+    override suspend fun getLastAttempt(userName: String, lessonId: Int): TaskSolution? = dbQuery {
+        TaskSolutions
+            .selectAll()
+            .maxByOrNull { TaskSolutions.attempt }
+            ?.let(::resultRowToTaskSolution)
+    }
+
+    override suspend fun updateTaskSolutionState(userName: String, lessonId: Int, newState: SolutionState): Boolean = dbQuery {
+        TaskSolutions
+            .update({ (TaskSolutions.lessonId eq lessonId) and (TaskSolutions.userName eq userName) }) {
+                it[state] = newState
+            } == 1
+    }
+
     private fun resultRowToTaskSolution(row: ResultRow): TaskSolution {
         return TaskSolution(
             id = row[TaskSolutions.id],

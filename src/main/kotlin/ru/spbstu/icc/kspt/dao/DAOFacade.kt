@@ -18,6 +18,7 @@ interface DAOFacade {
     suspend fun addAdmin(name: String): Admin?
 
     suspend fun addTaskSolution(userName: String, lessonId: Int, datetime: LocalDateTime, state: SolutionState, attempt: Long): TaskSolution?
-
     suspend fun getAttemptsCount(userName: String, lessonId: Int): Long
+    suspend fun getLastAttempt(userName: String, lessonId: Int): TaskSolution?
+    suspend fun updateTaskSolutionState(userName: String, lessonId: Int, newState: SolutionState): Boolean
 }

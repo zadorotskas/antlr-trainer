@@ -21,7 +21,7 @@ internal fun HTML.allLessonsForm(lessons: List<Lesson>) {
     }
 }
 
-internal fun HTML.lessonForm(isAdmin: Boolean, lessonContent: String, lessonNumber: Int, lessonName: String) {
+internal fun HTML.lessonForm(isAdmin: Boolean, lessonContent: String, lessonNumber: Int, lessonName: String, message: String?) {
     head {
         title = "Lesson"
     }
@@ -43,9 +43,6 @@ internal fun HTML.lessonForm(isAdmin: Boolean, lessonContent: String, lessonNumb
             +lessonContent
         }
         solution()
-        script {
-            src = "lesson.js"
-        }
         br
         div {
             button {
@@ -54,6 +51,30 @@ internal fun HTML.lessonForm(isAdmin: Boolean, lessonContent: String, lessonNumb
                 +"Upload solution"
             }
         }
+        br
+        h1 {
+            +"Last solution result:"
+        }
+        if (!isAdmin){
+            message?.let { lastAttemptMessage(it) }
+        }
+        testResult()
+        script {
+            src = "lesson.js"
+        }
+    }
+}
+
+private fun BODY.lastAttemptMessage(message: String) {
+    div {
+        id = "last-attempt-message-div"
+        +message
+    }
+}
+
+private fun BODY.testResult() {
+    div {
+        id = "test-result-div"
     }
 }
 

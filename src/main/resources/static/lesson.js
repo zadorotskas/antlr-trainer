@@ -10,6 +10,9 @@ window.onload = function() {
         });
     }
 
+    const testResultDiv = document.getElementById('test-result-div')
+    const lastAttemptMessageDiv = document.getElementById('last-attempt-message-div')
+
     const uploadSolutionBtn = document.getElementById('upload-solution-btn');
     uploadSolutionBtn.addEventListener('click', () => {
         var formData = new FormData();
@@ -31,14 +34,16 @@ window.onload = function() {
         }
 
         var xhr = new XMLHttpRequest();
-        xhr.open("POST", "/lesson/solution/" + location.pathname.split('/')[2], false);
+        xhr.open("POST", "/lesson/solution/" + location.pathname.split('/')[2], true);
         xhr.onreadystatechange = function() {
           if (xhr.readyState === 4)  {
-            alert(xhr.responseText);
+            lastAttemptMessageDiv.innerHTML = "";
+            testResultDiv.innerHTML = "";
+            const result = document.createTextNode(xhr.responseText);
+            testResultDiv.appendChild(result);
           }
         };
         xhr.send(formData);
-        window.location.href = '/lesson/all';
     });
 
     const appendValueToFormDataIfNotEmpty = (formData, name, value) => {

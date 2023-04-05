@@ -1,6 +1,7 @@
 package ru.spbstu.icc.kspt.routing
 
 import com.aspose.html.converters.Converter
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.html.*
@@ -16,6 +17,7 @@ import ru.spbstu.icc.kspt.extension.*
 import ru.spbstu.icc.kspt.forms.addLessonForm
 import ru.spbstu.icc.kspt.forms.allLessonsForm
 import ru.spbstu.icc.kspt.forms.lessonForm
+import ru.spbstu.icc.kspt.model.SolutionState
 import ru.spbstu.icc.kspt.runner.TestRunner
 import java.io.File
 
@@ -39,14 +41,15 @@ internal fun Route.lessonRoute() {
                 Converter.convertMarkdown(mdPath, htmlPath)
                 val htmlFile = File(htmlPath)
                 val lessonContent = htmlFile.readText().substringAfter("<body>").substringBeforeLast("</body>")
+                val lastAttemptMessage = dao.getLastAttempt(call.userName(), lessonId)?.state?.resultMessage
                 call.respondHtml {
-                    lessonForm(call.isAdmin(), lessonContent, lesson.number, lesson.name)
+                    lessonForm(call.isAdmin(), lessonContent, lesson.number, lesson.name, lastAttemptMessage)
                 }
                 htmlFile.delete()
             }
             post("/solution/{id}") {
+                val lessonId = call.parameters["id"]?.toInt() ?: error("missing id in request")
                 try {
-                    val lessonId = call.parameters["id"]?.toInt() ?: error("missing id in request")
                     val testsPath = config.testsPath
                     val grammarFile = uploadAndSaveSolution(testsPath, lessonId, call.userName())
                     val jarFile = withContext(Dispatchers.IO) {
@@ -59,10 +62,15 @@ internal fun Route.lessonRoute() {
                     )
                     jarFile.parentFile.parentFile.deleteRecursively()
                     result?.let {
-                        call.respond("finished with error: $result")
-                    } ?: call.respond("finished successfully")
+                        dao.updateTaskSolutionState(call.userName(), lessonId, SolutionState.FAILED)
+                        call.respond(HttpStatusCode.ExpectationFailed, "Finished with error: $result")
+                    } ?: run {
+                        dao.updateTaskSolutionState(call.userName(), lessonId, SolutionState.FINISHED)
+                        call.respond("Finished successfully")
+                    }
                 } catch (e: RuntimeException) {
-                    call.respond(e.message ?: "unknown error")
+                    dao.updateTaskSolutionState(call.userName(), lessonId, SolutionState.FAILED)
+                    call.respond(HttpStatusCode.ExpectationFailed, e.message ?: "Unknown error")
                 }
             }
         }

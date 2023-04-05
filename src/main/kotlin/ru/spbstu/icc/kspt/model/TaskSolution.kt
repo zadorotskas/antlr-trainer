@@ -28,6 +28,10 @@ data class TaskSolution(
     val attempt: Long
 )
 
-enum class SolutionState {
-    LOADED, FAILED, FINISHED
+enum class SolutionState(
+    val resultMessage: String
+) {
+    LOADED("Solution was loaded, but didn't started"),
+    FAILED("Run failed"),
+    FINISHED("Successful")
 }
