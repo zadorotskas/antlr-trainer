@@ -19,7 +19,8 @@ fun Application.configureRouting() {
             resources(".")
             static("lesson") {
                 resource("newLesson.js")
-                resource("lesson.js")
+                resource("studentLesson.js")
+                resource("adminLesson.js")
             }
         }
     }

@@ -15,8 +15,9 @@ import ru.spbstu.icc.kspt.build.ParserBuild
 import ru.spbstu.icc.kspt.dao
 import ru.spbstu.icc.kspt.extension.*
 import ru.spbstu.icc.kspt.forms.addLessonForm
+import ru.spbstu.icc.kspt.forms.adminLessonForm
 import ru.spbstu.icc.kspt.forms.allLessonsForm
-import ru.spbstu.icc.kspt.forms.lessonForm
+import ru.spbstu.icc.kspt.forms.studentLessonForm
 import ru.spbstu.icc.kspt.model.SolutionState
 import ru.spbstu.icc.kspt.runner.TestRunner
 import java.io.File
@@ -41,9 +42,17 @@ internal fun Route.lessonRoute() {
                 Converter.convertMarkdown(mdPath, htmlPath)
                 val htmlFile = File(htmlPath)
                 val lessonContent = htmlFile.readText().substringAfter("<body>").substringBeforeLast("</body>")
-                val lastAttemptMessage = dao.getLastAttempt(call.userName(), lessonId)?.state?.resultMessage
-                call.respondHtml {
-                    lessonForm(call.isAdmin(), lessonContent, lesson.number, lesson.name, lastAttemptMessage)
+
+                if (call.isAdmin()) {
+                    val progress = dao.
+                    call.respondHtml {
+                        adminLessonForm(lessonContent, lesson.number, lesson.name, )
+                    }
+                } else {
+                    val lastAttemptMessage = dao.getLastAttempt(call.userName(), lessonId)?.state?.resultMessage
+                    call.respondHtml {
+                        studentLessonForm(lessonContent, lesson.number, lesson.name, lastAttemptMessage)
+                    }
                 }
                 htmlFile.delete()
             }

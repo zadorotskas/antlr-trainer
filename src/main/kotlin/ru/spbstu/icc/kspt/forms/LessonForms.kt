@@ -2,6 +2,7 @@ package ru.spbstu.icc.kspt.forms
 
 import kotlinx.html.*
 import ru.spbstu.icc.kspt.model.Lesson
+import ru.spbstu.icc.kspt.model.TaskSolution
 
 internal fun HTML.allLessonsForm(lessons: List<Lesson>) {
     head {
@@ -21,21 +22,11 @@ internal fun HTML.allLessonsForm(lessons: List<Lesson>) {
     }
 }
 
-internal fun HTML.lessonForm(isAdmin: Boolean, lessonContent: String, lessonNumber: Int, lessonName: String, message: String?) {
+internal fun HTML.studentLessonForm(lessonContent: String, lessonNumber: Int, lessonName: String, message: String?) {
     head {
         title = "Lesson"
     }
     body {
-        if (isAdmin) {
-            div {
-                button {
-                    type = ButtonType.button
-                    id = "delete-lesson-btn"
-                    +"Delete lesson"
-                }
-            }
-            br
-        }
         h1 {
             +"Lesson $lessonNumber: $lessonName"
         }
@@ -55,12 +46,47 @@ internal fun HTML.lessonForm(isAdmin: Boolean, lessonContent: String, lessonNumb
         h1 {
             +"Last solution result:"
         }
-        if (!isAdmin){
-            message?.let { lastAttemptMessage(it) }
-        }
+        message?.let { lastAttemptMessage(it) }
         testResult()
+    }
+}
+
+internal fun HTML.adminLessonForm(
+    lessonContent: String,
+    lessonNumber: Int,
+    lessonName: String,
+    progress: List<TaskSolution>
+) {
+    head {
+        title = "Lesson"
+    }
+    body {
+        h1 {
+            +"Lesson $lessonNumber: $lessonName"
+        }
+        div {
+            button {
+                type = ButtonType.button
+                id = "delete-lesson-btn"
+                +"Delete lesson"
+            }
+        }
+        unsafe {
+            +lessonContent
+        }
+        br
+        solution()
+        br
+        h1 {
+            +"Progress:"
+            progress.forEach {
+                div {
+
+                }
+            }
+        }
         script {
-            src = "lesson.js"
+            src = "studentLesson.js"
         }
     }
 }
