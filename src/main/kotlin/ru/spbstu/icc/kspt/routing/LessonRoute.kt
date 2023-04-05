@@ -49,7 +49,18 @@ internal fun Route.lessonRoute() {
                     val lessonId = call.parameters["id"]?.toInt() ?: error("missing id in request")
                     val testsPath = config.testsPath
                     val grammarFile = uploadAndSaveSolution(testsPath, lessonId, call.userName())
-                    call.respond("file loaded successfully")
+                    val jarFile = withContext(Dispatchers.IO) {
+                        ParserBuild.buildSolution(grammarFile.parentFile, grammarFile.name.substringBeforeLast("."), config.antlrLibPath)
+                    }
+                    val result = TestRunner.runAndAssert(
+                        jarFile,
+                        File(config.lessonsPath).resolve("$lessonId").resolve("test"),
+                        grammarFile.parentFile.parentFile.resolve("result")
+                    )
+                    jarFile.parentFile.parentFile.deleteRecursively()
+                    result?.let {
+                        call.respond("finished with error: $result")
+                    } ?: call.respond("finished successfully")
                 } catch (e: RuntimeException) {
                     call.respond(e.message ?: "unknown error")
                 }

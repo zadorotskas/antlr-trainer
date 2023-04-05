@@ -108,7 +108,7 @@ class DAOFacadeImpl : DAOFacade {
     }
 
     override suspend fun getAttemptsCount(userName: String, lessonId: Int): Long = dbQuery {
-        TaskSolutions.select { (TaskSolutions.id eq lessonId) and (TaskSolutions.userName eq userName) }.count()
+        TaskSolutions.select { (TaskSolutions.lessonId eq lessonId) and (TaskSolutions.userName eq userName) }.count()
     }
 
     private fun resultRowToTaskSolution(row: ResultRow): TaskSolution {
