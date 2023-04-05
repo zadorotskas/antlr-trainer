@@ -1,9 +1,7 @@
 package ru.spbstu.icc.kspt.dao
 
-import ru.spbstu.icc.kspt.model.Admin
-import ru.spbstu.icc.kspt.model.Lesson
-import ru.spbstu.icc.kspt.model.User
-import ru.spbstu.icc.kspt.model.UserRole
+import ru.spbstu.icc.kspt.model.*
+import java.time.LocalDateTime
 
 interface DAOFacade {
     suspend fun user(login: String): User?
@@ -18,4 +16,8 @@ interface DAOFacade {
 
     suspend fun admin(name: String): Admin?
     suspend fun addAdmin(name: String): Admin?
+
+    suspend fun addTaskSolution(userName: String, lessonId: Int, datetime: LocalDateTime, state: SolutionState, attempt: Long): TaskSolution?
+
+    suspend fun getAttemptsCount(userName: String, lessonId: Int): Long
 }

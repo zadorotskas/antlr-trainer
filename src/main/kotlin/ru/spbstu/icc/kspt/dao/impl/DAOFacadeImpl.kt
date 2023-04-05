@@ -5,6 +5,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import ru.spbstu.icc.kspt.dao.DAOFacade
 import ru.spbstu.icc.kspt.dao.DatabaseFactory.dbQuery
 import ru.spbstu.icc.kspt.model.*
+import java.time.LocalDateTime
 
 class DAOFacadeImpl : DAOFacade {
     override suspend fun user(login: String): User? = dbQuery {
@@ -87,6 +88,37 @@ class DAOFacadeImpl : DAOFacade {
         return Admin(
             id = row[Admins.id],
             userName = row[Admins.userName]
+        )
+    }
+
+    override suspend fun addTaskSolution(
+        userName: String,
+        lessonId: Int,
+        datetime: LocalDateTime,
+        state: SolutionState,
+        attempt: Long
+    ): TaskSolution? = dbQuery {
+        TaskSolutions.insert {
+            it[TaskSolutions.userName] = userName
+            it[TaskSolutions.lessonId] = lessonId
+            it[TaskSolutions.datetime] = datetime
+            it[TaskSolutions.state] = state
+            it[TaskSolutions.attempt] = attempt
+        }.resultedValues?.singleOrNull()?.let(::resultRowToTaskSolution)
+    }
+
+    override suspend fun getAttemptsCount(userName: String, lessonId: Int): Long = dbQuery {
+        TaskSolutions.select { (TaskSolutions.id eq lessonId) and (TaskSolutions.userName eq userName) }.count()
+    }
+
+    private fun resultRowToTaskSolution(row: ResultRow): TaskSolution {
+        return TaskSolution(
+            id = row[TaskSolutions.id],
+            userName = row[TaskSolutions.userName],
+            lessonId = row[TaskSolutions.lessonId],
+            datetime = row[TaskSolutions.datetime],
+            state = row[TaskSolutions.state],
+            attempt = row[TaskSolutions.attempt]
         )
     }
 }

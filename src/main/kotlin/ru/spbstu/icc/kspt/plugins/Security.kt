@@ -33,7 +33,6 @@ fun Application.configureSecurity() {
     val config = environment.config
     install(Authentication) {
         configureSessionAuth()
-//        configureFormAuth()
         configureOauth(config, redirects)
     }
     routing {

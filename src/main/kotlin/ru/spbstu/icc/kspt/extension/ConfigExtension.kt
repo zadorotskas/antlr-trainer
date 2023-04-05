@@ -5,6 +5,9 @@ import io.ktor.server.config.*
 internal val ApplicationConfig?.lessonsPath: String
     get() = System.getProperty("user.dir") + (this?.propertyOrNull("data.lessonsFolder")?.getString() ?: "/data/lessons")
 
+internal val ApplicationConfig?.testsPath: String
+    get() = System.getProperty("user.dir") + (this?.propertyOrNull("data.testsFolder")?.getString() ?: "/data/tests")
+
 internal val ApplicationConfig?.oauthClientId: String
     get() = this?.propertyOrNull("ktor.deployment.clientId")?.getString() ?: error("missing clientId in config")
 

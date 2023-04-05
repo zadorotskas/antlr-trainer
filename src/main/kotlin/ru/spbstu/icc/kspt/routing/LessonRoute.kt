@@ -12,13 +12,10 @@ import ru.spbstu.icc.kspt.AuthName
 import ru.spbstu.icc.kspt.CommonRoutes
 import ru.spbstu.icc.kspt.build.ParserBuild
 import ru.spbstu.icc.kspt.dao
-import ru.spbstu.icc.kspt.extension.antlrLibPath
-import ru.spbstu.icc.kspt.extension.lessonsPath
-import ru.spbstu.icc.kspt.extension.uploadAndSaveNewLesson
+import ru.spbstu.icc.kspt.extension.*
 import ru.spbstu.icc.kspt.forms.addLessonForm
 import ru.spbstu.icc.kspt.forms.allLessonsForm
 import ru.spbstu.icc.kspt.forms.lessonForm
-import ru.spbstu.icc.kspt.isAdmin
 import ru.spbstu.icc.kspt.runner.TestRunner
 import java.io.File
 
@@ -43,9 +40,19 @@ internal fun Route.lessonRoute() {
                 val htmlFile = File(htmlPath)
                 val lessonContent = htmlFile.readText().substringAfter("<body>").substringBeforeLast("</body>")
                 call.respondHtml {
-                    lessonForm(call.isAdmin(), lessonContent)
+                    lessonForm(call.isAdmin(), lessonContent, lesson.number, lesson.name)
                 }
                 htmlFile.delete()
+            }
+            post("/solution/{id}") {
+                try {
+                    val lessonId = call.parameters["id"]?.toInt() ?: error("missing id in request")
+                    val testsPath = config.testsPath
+                    val grammarFile = uploadAndSaveSolution(testsPath, lessonId, call.userName())
+                    call.respond("file loaded successfully")
+                } catch (e: RuntimeException) {
+                    call.respond(e.message ?: "unknown error")
+                }
             }
         }
         authenticate(AuthName.SESSION_ADMIN) {

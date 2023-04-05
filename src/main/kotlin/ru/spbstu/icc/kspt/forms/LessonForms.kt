@@ -21,7 +21,7 @@ internal fun HTML.allLessonsForm(lessons: List<Lesson>) {
     }
 }
 
-internal fun HTML.lessonForm(isAdmin: Boolean, lessonContent: String) {
+internal fun HTML.lessonForm(isAdmin: Boolean, lessonContent: String, lessonNumber: Int, lessonName: String) {
     head {
         title = "Lesson"
     }
@@ -36,12 +36,23 @@ internal fun HTML.lessonForm(isAdmin: Boolean, lessonContent: String) {
             }
             br
         }
+        h1 {
+            +"Lesson $lessonNumber: $lessonName"
+        }
         unsafe {
             +lessonContent
         }
         solution()
         script {
             src = "lesson.js"
+        }
+        br
+        div {
+            button {
+                id = "upload-solution-btn"
+                type = ButtonType.button
+                +"Upload solution"
+            }
         }
     }
 }

@@ -6,22 +6,28 @@ import java.time.LocalDateTime
 
 object TaskSolutions : Table() {
     val id = integer("id").autoIncrement()
-    val userToken = varchar("userToken", 256)
+    val userName = varchar("userName", 256)
     val lessonId = reference("lesson_id", Lessons.id)
     val datetime = datetime("datetime")
     val state = enumeration<SolutionState>("state")
+    val attempt = long("attempt")
 
     override val primaryKey = PrimaryKey(id)
+
+    init {
+        uniqueIndex("task_solution__attempts", userName, lessonId, attempt)
+    }
 }
 
 data class TaskSolution(
     val id: Int,
-    val userToken: String,
-    val lesson: Lesson,
+    val userName: String,
+    val lessonId: Int,
     val datetime: LocalDateTime,
-    val state: SolutionState
+    val state: SolutionState,
+    val attempt: Long
 )
 
 enum class SolutionState {
-    FAILED, FINISHED
+    LOADED, FAILED, FINISHED
 }

@@ -5,7 +5,9 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.util.pipeline.*
 import ru.spbstu.icc.kspt.dao
+import ru.spbstu.icc.kspt.model.SolutionState
 import java.io.File
+import java.time.LocalDateTime
 
 internal suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveNewLesson(path: String): File {
     val multipart = call.receiveMultipart()
@@ -67,6 +69,42 @@ internal suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveNewLess
     }
 
     val solutionFolder = file.parentFile.resolve("solution")
+    solutionFolder.mkdirs()
+    solution.checkHasCorrectFiles()
+    return solution.createFiles(solutionFolder)
+}
+
+internal suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveSolution(path: String, lessonId: Int, userName: String): File {
+    val multipart = call.receiveMultipart()
+
+    val solution = Solution()
+
+    multipart.forEachPart { part ->
+        when (part) {
+            is PartData.FileItem -> {
+                when (part.name) {
+                    "solutionFiles" -> solution.addFile(part.originalFileName, part.streamProvider().readBytes())
+                }
+            }
+
+            is PartData.FormItem -> {
+                when (part.name) {
+                    "g4" -> solution.g4String = part.value
+                    "main" -> solution.mainString = part.value
+                    "listener" -> solution.listenerString = part.value
+                    "visitor" -> solution.visitorString = part.value
+                }
+            }
+
+            else -> {}
+        }
+        part.dispose()
+    }
+
+    val currentAttempt = dao.getAttemptsCount(userName, lessonId) + 1
+    dao.addTaskSolution(userName, lessonId, LocalDateTime.now(), SolutionState.LOADED, currentAttempt)
+
+    val solutionFolder = File("$path${File.separator}${lessonId}${File.separator}${userName}${File.separator}attempts${File.separator}$currentAttempt${File.separator}solution")
     solutionFolder.mkdirs()
     solution.checkHasCorrectFiles()
     return solution.createFiles(solutionFolder)
