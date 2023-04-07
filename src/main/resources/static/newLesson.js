@@ -53,22 +53,28 @@ const appendValueToFormDataIfNotEmpty = (formData, name, value) => {
 
 const addListenerDiv = document.getElementById('listener-div');
 addListenerDiv.style.visibility = 'hidden'
+addListenerDiv.style.height = '0px'
 const addListenerCheckbox = document.getElementById('add-listener-checkbox');
 addListenerCheckbox.addEventListener('change', () => {
     if (addListenerCheckbox.checked) {
         addListenerDiv.style.visibility = 'visible'
+        addListenerDiv.style.height = '150px'
     } else {
         addListenerDiv.style.visibility = 'hidden'
+        addListenerDiv.style.height = '0px'
     }
 });
 
 const addVisitorDiv = document.getElementById('visitor-div');
 addVisitorDiv.style.visibility = 'hidden'
+addVisitorDiv.style.height = '0px'
 const addVisitorCheckbox = document.getElementById('add-visitor-checkbox');
 addVisitorCheckbox.addEventListener('change', () => {
     if (addVisitorCheckbox.checked) {
         addVisitorDiv.style.visibility = 'visible'
+        addVisitorDiv.style.height = '150px'
     } else {
         addVisitorDiv.style.visibility = 'hidden'
+        addVisitorDiv.style.height = '0px'
     }
 });

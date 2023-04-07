@@ -44,9 +44,9 @@ internal fun Route.lessonRoute() {
                 val lessonContent = htmlFile.readText().substringAfter("<body>").substringBeforeLast("</body>")
 
                 if (call.isAdmin()) {
-                    val progress = dao.
+                    val progress = dao.getProgress(lessonId)
                     call.respondHtml {
-                        adminLessonForm(lessonContent, lesson.number, lesson.name, )
+                        adminLessonForm(lessonContent, lesson.number, lesson.name, progress, emptyList())
                     }
                 } else {
                     val lastAttemptMessage = dao.getLastAttempt(call.userName(), lessonId)?.state?.resultMessage

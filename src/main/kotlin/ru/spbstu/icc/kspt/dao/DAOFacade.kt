@@ -21,4 +21,5 @@ interface DAOFacade {
     suspend fun getAttemptsCount(userName: String, lessonId: Int): Long
     suspend fun getLastAttempt(userName: String, lessonId: Int): TaskSolution?
     suspend fun updateTaskSolutionState(userName: String, lessonId: Int, newState: SolutionState): Boolean
+    suspend fun getProgress(lessonId: Int): List<TaskSolution>
 }
