@@ -14,7 +14,7 @@ internal fun Routing.homepageRoute() {
             if (call.principal<UserPrincipal>() == null) {
                 call.respondRedirect(CommonRoutes.LOGIN)
             } else {
-                call.respondRedirect(CommonRoutes.PROFILE)
+                call.respondRedirect(CommonRoutes.ALL_LESSONS)
             }
         }
     }

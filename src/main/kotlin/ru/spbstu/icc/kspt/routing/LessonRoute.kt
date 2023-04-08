@@ -19,6 +19,7 @@ import ru.spbstu.icc.kspt.forms.adminLessonForm
 import ru.spbstu.icc.kspt.forms.allLessonsForm
 import ru.spbstu.icc.kspt.forms.studentLessonForm
 import ru.spbstu.icc.kspt.model.SolutionState
+import ru.spbstu.icc.kspt.model.UserPrincipal
 import ru.spbstu.icc.kspt.runner.TestRunner
 import java.io.File
 
@@ -28,8 +29,9 @@ internal fun Route.lessonRoute() {
         authenticate(AuthName.SESSION) {
             get("/all") {
                 val lessons = dao.allLessons()
+                val principal = call.principal<UserPrincipal>()!!
                 call.respondHtml {
-                    allLessonsForm(lessons)
+                    allLessonsForm(lessons, principal)
                 }
             }
             get("/{id}") {
@@ -43,15 +45,16 @@ internal fun Route.lessonRoute() {
                 val htmlFile = File(htmlPath)
                 val lessonContent = htmlFile.readText().substringAfter("<body>").substringBeforeLast("</body>")
 
+                val principal = call.principal<UserPrincipal>()!!
                 if (call.isAdmin()) {
                     val progress = dao.getProgress(lessonId)
                     call.respondHtml {
-                        adminLessonForm(lessonContent, lesson.number, lesson.name, progress, emptyList())
+                        adminLessonForm(lessonContent, lesson.number, lesson.name, progress, emptyList(), principal)
                     }
                 } else {
                     val lastAttemptMessage = dao.getLastAttempt(call.userName(), lessonId)?.state?.resultMessage
                     call.respondHtml {
-                        studentLessonForm(lessonContent, lesson.number, lesson.name, lastAttemptMessage)
+                        studentLessonForm(lessonContent, lesson.number, lesson.name, lastAttemptMessage, principal)
                     }
                 }
                 htmlFile.delete()
@@ -106,8 +109,9 @@ internal fun Route.lessonRoute() {
                 }
             }
             get("/new") {
+                val principal = call.principal<UserPrincipal>()!!
                 call.respondHtml {
-                    addLessonForm()
+                    addLessonForm(principal)
                 }
             }
         }

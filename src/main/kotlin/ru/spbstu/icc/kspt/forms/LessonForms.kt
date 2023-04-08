@@ -4,8 +4,10 @@ import kotlinx.html.*
 import ru.spbstu.icc.kspt.model.Lesson
 import ru.spbstu.icc.kspt.model.SolutionState
 import ru.spbstu.icc.kspt.model.TaskSolution
+import ru.spbstu.icc.kspt.model.UserPrincipal
+import java.time.format.DateTimeFormatter
 
-internal fun HTML.allLessonsForm(lessons: List<Lesson>) {
+internal fun HTML.allLessonsForm(lessons: List<Lesson>, principal: UserPrincipal) {
     head {
         title = "Lessons"
         unsafe {
@@ -13,6 +15,7 @@ internal fun HTML.allLessonsForm(lessons: List<Lesson>) {
         }
     }
     body {
+        navigation(principal)
         div(classes = "container") {
             h1("mb-3") {
                 +"Lessons:"
@@ -32,7 +35,7 @@ internal fun HTML.allLessonsForm(lessons: List<Lesson>) {
     }
 }
 
-internal fun HTML.studentLessonForm(lessonContent: String, lessonNumber: Int, lessonName: String, message: String?) {
+internal fun HTML.studentLessonForm(lessonContent: String, lessonNumber: Int, lessonName: String, message: String?, principal: UserPrincipal) {
     head {
         title = "Lesson"
         unsafe {
@@ -40,6 +43,7 @@ internal fun HTML.studentLessonForm(lessonContent: String, lessonNumber: Int, le
         }
     }
     body {
+        navigation(principal)
         form(classes = "container") {
             div(classes = "row") {
                 h1 {
@@ -79,7 +83,8 @@ internal fun HTML.adminLessonForm(
     lessonNumber: Int,
     lessonName: String,
     progress: List<TaskSolution>,
-    notStartedNames: List<String>
+    notStartedNames: List<String>,
+    principal: UserPrincipal
 ) {
     head {
         title = "Lesson"
@@ -88,6 +93,7 @@ internal fun HTML.adminLessonForm(
         }
     }
     body {
+        navigation(principal)
         form(classes = "container") {
             h1(classes = "mb-3") {
                 +"Lesson $lessonNumber: $lessonName"
@@ -112,27 +118,30 @@ internal fun HTML.adminLessonForm(
             h1 {
                 +"Progress"
             }
-            div(classes = "mb-3") {
+            ul(classes = "list-group mb-3") {
                 progress.forEach {
                     val cssClass = when (it.state) {
-                        SolutionState.FINISHED -> "finished"
-                        else -> "not-finished"
+                        SolutionState.FINISHED -> "list-group-item-success"
+                        else -> "list-group-item-warning"
                     }
-                    div {
-                        p {
-                            +"${it.userName}:"
-                        }
-                        div(classes = cssClass) {
-                            +"${it.datetime}"
+
+                    li(classes = "list-group-item $cssClass") {
+                        div(classes = "d-flex justify-content-between") {
+                            h5(classes = "mb-1") {
+                                +it.userName
+                            }
+                            p(classes = "mb-1") {
+                                +"Uploaded at ${it.datetime.format(DateTimeFormatter.ofPattern("dd.MM.yyyy  HH:mm:ss"))}"
+                            }
                         }
                     }
                 }
                 notStartedNames.forEach {
-                    div {
+                    li(classes = "list-group-item list-group-item-danger") {
                         p {
                             +"$it:"
                         }
-                        div(classes = "not-started") {
+                        div {
                             +"Not started"
                         }
                     }
@@ -161,13 +170,14 @@ private fun FORM.testResult() {
     }
 }
 
-internal fun HTML.addLessonForm() {
+internal fun HTML.addLessonForm(principal: UserPrincipal) {
     head {
         unsafe {
             +"<link href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css\" rel=\"stylesheet\" integrity=\"sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65\" crossorigin=\"anonymous\">"
         }
     }
     body {
+        navigation(principal)
         form(classes = "container") {
             h1 {
                 +"Add new lesson"
@@ -244,10 +254,14 @@ fun FORM.solution() {
             +"<label for=\"floatingTextarea2\">Main class</label>"
         }
     }
-    checkBoxInput {
-        checked = false
-        id = "add-listener-checkbox"
-        +"Add listener file"
+    div(classes = "form-check mb-3") {
+        checkBoxInput(classes = "form-check-input") {
+            checked = false
+            id = "add-listener-checkbox"
+        }
+        label(classes = "form-check-label") {
+            +"Add listener file"
+        }
     }
     div(classes = "form-floating mb-3") {
         id = "listener-div"
@@ -260,10 +274,14 @@ fun FORM.solution() {
             +"<label for=\"floatingTextarea2\">Listener</label>"
         }
     }
-    checkBoxInput {
-        checked = false
-        id = "add-visitor-checkbox"
-        +"Add visitor file"
+    div(classes = "form-check mb-3") {
+        checkBoxInput(classes = "form-check-input") {
+            checked = false
+            id = "add-visitor-checkbox"
+        }
+        label(classes = "form-check-label") {
+            +"Add visitor file"
+        }
     }
     div(classes = "form-floating mb-3") {
         id = "visitor-div"

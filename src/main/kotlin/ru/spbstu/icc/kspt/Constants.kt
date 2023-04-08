@@ -10,8 +10,8 @@ object AuthName {
 object CommonRoutes {
     const val LOGIN = "/login"
     const val LOGOUT = "/logout"
-    const val PROFILE = "/profile"
     const val LESSON = "/lesson"
+    const val ALL_LESSONS = "/lesson/all"
     const val AUTH = "/auth"
 }
 
