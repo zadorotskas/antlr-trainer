@@ -1,6 +1,7 @@
 window.onload = function() {
     const testResultDiv = document.getElementById('test-result-div')
     const lastAttemptMessageDiv = document.getElementById('last-attempt-message-div')
+    const solutionResultH1 = document.getElementById('solution-result-h1')
 
     const uploadSolutionBtn = document.getElementById('upload-solution-btn');
     uploadSolutionBtn.addEventListener('click', () => {
@@ -30,6 +31,7 @@ window.onload = function() {
             testResultDiv.innerHTML = "";
             const result = document.createTextNode(xhr.responseText);
             testResultDiv.appendChild(result);
+            solutionResultH1.visibility = 'visible'
           }
         };
         xhr.send(formData);

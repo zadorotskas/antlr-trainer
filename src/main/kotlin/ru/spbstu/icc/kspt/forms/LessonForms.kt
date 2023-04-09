@@ -45,28 +45,30 @@ internal fun HTML.studentLessonForm(lessonContent: String, lessonNumber: Int, le
     body {
         navigation(principal)
         form(classes = "container") {
-            div(classes = "row") {
-                h1 {
-                    +"Lesson $lessonNumber: $lessonName"
-                }
+            h1(classes = "mb-3") {
+                +"Lesson $lessonNumber: $lessonName"
             }
-            unsafe {
-                +lessonContent
+            div(classes = "mb-3") {
+                unsafe {
+                    +lessonContent
+                }
             }
             solution()
             br
-            div {
-                button {
-                    id = "upload-solution-btn"
-                    type = ButtonType.button
-                    +"Upload solution"
-                }
+            button(classes = "btn btn-success mb-3") {
+                id = "upload-solution-btn"
+                type = ButtonType.button
+                +"Upload solution"
             }
             br
-            h1 {
+            h1(classes = "mb-3") {
+                if (message == null) style = "visibility: hidden"
+                id = "solution-result-h1"
                 +"Last solution result:"
             }
-            message?.let { lastAttemptMessage(it) }
+            message?.let {
+                lastAttemptMessage(it)
+            }
             testResult()
         }
         script {
@@ -219,7 +221,6 @@ internal fun HTML.addLessonForm(principal: UserPrincipal) {
                 type = ButtonType.submit
                 +"Add lesson"
             }
-
         }
         script {
             src = "newLesson.js"

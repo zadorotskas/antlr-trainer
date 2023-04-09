@@ -6,6 +6,7 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
+import kotlinx.serialization.json.Json
 import ru.spbstu.icc.kspt.dao.DAOFacade
 import ru.spbstu.icc.kspt.dao.DatabaseFactory
 import ru.spbstu.icc.kspt.dao.impl.DAOFacadeImpl
@@ -27,6 +28,8 @@ val dao: DAOFacade = DAOFacadeImpl()
 
 val applicationHttpClient = HttpClient(CIO) {
     install(ContentNegotiation) {
-        json()
+        json(Json {
+            ignoreUnknownKeys = true
+        })
     }
 }

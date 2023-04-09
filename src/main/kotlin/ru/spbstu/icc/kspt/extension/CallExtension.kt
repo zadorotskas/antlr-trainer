@@ -104,7 +104,7 @@ internal suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveSolutio
     val currentAttempt = dao.getAttemptsCount(userName, lessonId) + 1
     dao.addTaskSolution(userName, lessonId, LocalDateTime.now(), SolutionState.LOADED, currentAttempt)
 
-    val solutionFolder = File("$path${File.separator}${lessonId}${File.separator}${userName}${File.separator}attempts${File.separator}$currentAttempt${File.separator}solution")
+    val solutionFolder = File("$path${File.separator}${lessonId}${File.separator}${userName.replace(" ", "_")}${File.separator}attempts${File.separator}$currentAttempt${File.separator}solution")
     solutionFolder.mkdirs()
     solution.checkHasCorrectFiles()
     return solution.createFiles(solutionFolder)

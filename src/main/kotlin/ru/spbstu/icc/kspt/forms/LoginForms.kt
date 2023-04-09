@@ -9,19 +9,19 @@ internal fun HTML.loginForm() {
         }
     }
     body {
-        div(classes = "login-form") {
-            form {
-                h1 {
-                    +"Login"
-                }
-                div(classes = "action") {
-                    button {
-                        id = "login-btn"
-                        type = ButtonType.button
-                        +"Login with Google"
-                    }
-                }
-            }
+        form(classes = "container d-flex align-items-center flex-column mb-3") {
+           div(classes = "") {
+               h1(classes = "p-2") {
+                   +"Login"
+               }
+               div(classes = "p-2") {
+                   button(classes = "btn btn-primary mb-3") {
+                       id = "login-btn"
+                       type = ButtonType.button
+                       +"Login with Google"
+                   }
+               }
+           }
         }
         script {
             src = "login.js"

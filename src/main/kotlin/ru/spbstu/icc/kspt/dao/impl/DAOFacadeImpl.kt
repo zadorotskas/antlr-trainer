@@ -2,7 +2,6 @@ package ru.spbstu.icc.kspt.dao.impl
 
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.neq
 import ru.spbstu.icc.kspt.dao.DAOFacade
 import ru.spbstu.icc.kspt.dao.DatabaseFactory.dbQuery
 import ru.spbstu.icc.kspt.model.*
@@ -139,37 +138,33 @@ class DAOFacadeImpl : DAOFacade {
     override suspend fun getProgress(lessonId: Int): List<TaskSolution> = dbQuery {
         val subQuery = TaskSolutions
             .slice(TaskSolutions.userName, TaskSolutions.attempt.max().alias(TaskSolutions.attempt.name))
-            .select((TaskSolutions.lessonId eq lessonId) and (TaskSolutions.state eq SolutionState.FINISHED))
+            .select((TaskSolutions.lessonId eq lessonId))// and (TaskSolutions.state eq SolutionState.FINISHED))
             .groupBy(TaskSolutions.userName)
             .alias("subQuery")
 
-        TaskSolutions
-            .join(subQuery, JoinType.INNER, additionalConstraint = {
+        val result = TaskSolutions
+            .join(subQuery, JoinType.LEFT, additionalConstraint = {
                 (TaskSolutions.userName eq subQuery[TaskSolutions.userName]) and (TaskSolutions.attempt eq subQuery[TaskSolutions.attempt])
             })
             .slice(TaskSolutions.id, TaskSolutions.userName, TaskSolutions.lessonId, TaskSolutions.datetime, TaskSolutions.state, TaskSolutions.attempt)
             .select(
                 (TaskSolutions.lessonId eq lessonId)
                         and (
-                            (TaskSolutions.state eq SolutionState.FINISHED)
-                                    or ((TaskSolutions.state neq SolutionState.FINISHED) and (subQuery[TaskSolutions.attempt] eq TaskSolutions.attempt))
+                            (TaskSolutions.state eq SolutionState.FINISHED) or (subQuery[TaskSolutions.attempt] eq TaskSolutions.attempt)
                         )
             )
             .map(::resultRowToTaskSolution)
 
-//        val subQuery2 = TaskSolutions
-//            .slice(TaskSolutions.userName, TaskSolutions.attempt.max().alias(TaskSolutions.attempt.name))
-//            .select((TaskSolutions.lessonId eq lessonId) and (TaskSolutions.state eq SolutionState.FAILED))
-//            .groupBy(TaskSolutions.userName)
-//            .alias("subQuery")
-//
-//        TaskSolutions
-//            .join(subQuery2, JoinType.INNER, additionalConstraint = {
-//                (TaskSolutions.userName eq subQuery2[TaskSolutions.userName]) and (TaskSolutions.attempt eq subQuery2[TaskSolutions.attempt])
-//            })
-//            .slice(TaskSolutions.id, TaskSolutions.userName, TaskSolutions.lessonId, TaskSolutions.datetime, TaskSolutions.state, TaskSolutions.attempt)
-//            .select((TaskSolutions.lessonId eq lessonId))
-//            .map(::resultRowToTaskSolution)
+        val userNamesToSolution = mutableMapOf<String, TaskSolution>()
+
+        result.forEach {
+            val previous = userNamesToSolution[it.userName]
+            if (previous == null || (previous.state != SolutionState.FINISHED && previous.attempt < it.attempt)) {
+                userNamesToSolution[it.userName] = it
+            }
+        }
+
+        return@dbQuery userNamesToSolution.values.toList().sortedWith(compareBy ({ it.state }, { it.datetime })).reversed()
     }
 
     private fun resultRowToTaskSolution(row: ResultRow): TaskSolution {

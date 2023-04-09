@@ -13,6 +13,9 @@ internal fun BODY.navigation(principal: UserPrincipal) {
                 href = "/lesson/all"
                 +"ANTLR Trainer"
             }
+            unsafe {
+                +"<button class=\"navbar-toggler\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#navbarNavDropdown\" aria-controls=\"navbarNavDropdown\" aria-expanded=\"false\" aria-label=\"Toggle navigation\">\n <span class=\"navbar-toggler-icon\"></span>\n </button>"
+            }
             div(classes = "collapse navbar-collapse") {
                 id = "navbarNavDropdown"
                 ul(classes = "navbar-nav") {
