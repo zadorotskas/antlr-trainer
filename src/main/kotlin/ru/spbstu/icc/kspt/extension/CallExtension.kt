@@ -1,5 +1,6 @@
 package ru.spbstu.icc.kspt.extension
 
+import com.ibm.icu.text.Transliterator
 import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -8,6 +9,8 @@ import ru.spbstu.icc.kspt.dao
 import ru.spbstu.icc.kspt.model.SolutionState
 import java.io.File
 import java.time.LocalDateTime
+
+const val CYRILLIC_TO_LATIN = "Russian-Latin/BGN"
 
 internal suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveNewLesson(path: String): File {
     val multipart = call.receiveMultipart()
@@ -49,7 +52,13 @@ internal suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveNewLess
         part.dispose()
     }
 
-    val fileName = fileNameParam ?: error("does not receive file name")
+    var fileName = fileNameParam ?: error("does not receive file name")
+
+    if (fileName.contains(Regex("""[а-яА-Я]"""))) {
+        val toLatinTrans: Transliterator = Transliterator.getInstance(CYRILLIC_TO_LATIN)
+        fileName = toLatinTrans.transliterate(fileName)
+    }
+
     val number = numberParam ?: error("does not receive number")
 
     val lesson = dao.addLesson(fileName, number) ?: error("cant save file info in database")
