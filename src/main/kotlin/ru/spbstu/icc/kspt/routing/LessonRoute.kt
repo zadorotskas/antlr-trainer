@@ -1,10 +1,6 @@
 package ru.spbstu.icc.kspt.routing
 
 import com.aspose.html.converters.Converter
-import com.vladsch.flexmark.html.HtmlRenderer
-import com.vladsch.flexmark.parser.Parser
-import com.vladsch.flexmark.util.ast.Node
-import com.vladsch.flexmark.util.data.MutableDataSet
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -13,9 +9,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.intellij.markdown.flavours.commonmark.CommonMarkFlavourDescriptor
-import org.intellij.markdown.html.HtmlGenerator
-import org.intellij.markdown.parser.MarkdownParser
 import ru.spbstu.icc.kspt.AuthName
 import ru.spbstu.icc.kspt.CommonRoutes
 import ru.spbstu.icc.kspt.build.ParserBuild
@@ -52,40 +45,21 @@ internal fun Route.lessonRoute() {
                 val mdPath = "$filePath.md"
                 Converter.convertMarkdown(mdPath, htmlPath)
                 val htmlFile = File(htmlPath)
-//                val hmtl2 = PegDownProcessor().markdownToHtml(File(mdPath).readText())
-//                val html = Markdown4jProcessor().process(File(mdPath))
                 val lessonContent = htmlFile.readText().substringAfter("<body>").substringBeforeLast("</body>")
-//                val html3 = Processor.process(File(mdPath))
-
-                val src = File(mdPath).readText()
-                val flavour = CommonMarkFlavourDescriptor()
-                val parsedTree = MarkdownParser(flavour).buildMarkdownTreeFromString(src)
-                val html = HtmlGenerator(src, parsedTree, flavour).generateHtml()
-
-//                val lessonContent = htmlDoc.toString()
-                val options = MutableDataSet()
-                val parser: Parser = Parser.builder(options).build()
-                val renderer: HtmlRenderer = HtmlRenderer.builder(options).build()
-
-                val document: Node = parser.parse(File(mdPath).readText())
-//                val html = renderer.render(document)
-
 
                 val principal = call.principal<UserPrincipal>()!!
                 if (call.isAdmin()) {
                     val progress = dao.getProgress(lessonId)
                     call.respondHtml {
-                        adminLessonForm(html, lesson.number, lesson.name, progress, emptyList(), principal)
+                        adminLessonForm(lessonContent, lesson.number, lesson.name, progress, emptyList(), principal)
                     }
                 } else {
                     val lastAttemptMessage = dao.getLastAttempt(call.userName(), lessonId)?.state?.resultMessage
                     call.respondHtml {
-                        studentLessonForm(html, lesson.number, lesson.name, lastAttemptMessage, principal)
+                        studentLessonForm(lessonContent, lesson.number, lesson.name, lastAttemptMessage, principal)
                     }
                 }
                 htmlFile.delete()
-//                lessonContent.get(1)
-//                hmtl2.get(1)
             }
             post("/solution/{id}") {
                 val lessonId = call.parameters["id"]?.toInt() ?: error("missing id in request")

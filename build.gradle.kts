@@ -31,6 +31,10 @@ repositories {
     }
 }
 
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
+
 dependencies {
     implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-freemarker-jvm:$ktor_version")
@@ -52,16 +56,12 @@ dependencies {
     implementation("com.h2database:h2:$h2_version")
     implementation("at.favre.lib:bcrypt:$bcrypt_version")
     implementation("org.postgresql:postgresql:$postgres_version")
-    implementation("org.apache.commons:commons-email:$email_version")
     implementation(group = "com.aspose", name = "aspose-html" , version = aspose_version, classifier = "jdk16")
-    implementation("com.xenoamess:nashorn:jdk8u265-b01-x3")
-    implementation("com.ibm.icu:icu4j:72.1")
-    implementation("org.commonjava.googlecode.markdown4j:markdown4j:2.2-cj-1.0")
-    implementation("org.pegdown:pegdown:1.6.0")
-    implementation("com.github.rjeschke:txtmark:0.13")
-    implementation("com.vladsch.flexmark:flexmark-all:0.64.0")
-    implementation("org.jetbrains:markdown:0.4.0")
+
+    implementation("org.antlr:antlr4:4.10.1")
+    implementation("com.github.curious-odd-man:rgxgen:1.4")
 
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
 }

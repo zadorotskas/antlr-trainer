@@ -138,7 +138,7 @@ class DAOFacadeImpl : DAOFacade {
     override suspend fun getProgress(lessonId: Int): List<TaskSolution> = dbQuery {
         val subQuery = TaskSolutions
             .slice(TaskSolutions.userName, TaskSolutions.attempt.max().alias(TaskSolutions.attempt.name))
-            .select((TaskSolutions.lessonId eq lessonId))// and (TaskSolutions.state eq SolutionState.FINISHED))
+            .select((TaskSolutions.lessonId eq lessonId))
             .groupBy(TaskSolutions.userName)
             .alias("subQuery")
 
