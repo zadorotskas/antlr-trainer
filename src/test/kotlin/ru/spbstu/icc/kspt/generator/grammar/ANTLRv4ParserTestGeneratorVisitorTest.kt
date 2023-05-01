@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 internal class ANTLRv4ParserTestGeneratorVisitorTest {
-    
     @Test
     fun shouldGenerateForLexerRules() {
         val inputStream = CharStreams.fromString(
@@ -38,7 +37,7 @@ internal class ANTLRv4ParserTestGeneratorVisitorTest {
         repeat(50) {
             val result = visitor
                 .tokens
-                .mapValues { it.value.generate() }
+                .mapValues { it.value.generate(-1) }
 
             assertEquals(13, result.size)
             assertTrue(Regex("[0-9]+").matches(result["Num"]!!))
@@ -76,12 +75,158 @@ internal class ANTLRv4ParserTestGeneratorVisitorTest {
 
         assertTrue(visitor.isLexerGrammar)
         repeat(50) {
-            val result = visitor.tokens.mapValues { it.value.generate() }
+            val result = visitor.tokens.mapValues { it.value.generate(-1) }
 
             assertEquals(2, result.size)
             val first = Regex("[0-9]+").matches(result["Num"]!!)
             val second = Regex("[<>]").matches(result["Num"]!!)
             assertTrue(first || second)
+        }
+    }
+
+    @Test
+    fun shouldGenerateForParserRules() {
+        val inputStream = CharStreams.fromString(
+            """
+                grammar Example1_2;
+                
+                test1       : test2 SEMICOLON ;
+                test2       : ID EQUAL NUMBER ;
+                test3       : exprSign? summand (exprSign summand)*;
+                
+                exprSign            : PLUS
+                                    | MINUS ;
+                summand             : multiplier (multSign multiplier)*;
+                            
+                multSign            : TIMES            
+                                    | SLASH ;
+                                                
+                multiplier          : multiplierId            
+                                    | multiplierNumber            
+                                    | multiplierExpression ;
+                                                
+                multiplierId        : ID ;
+                            
+                multiplierNumber    : NUMBER ;
+                            
+                multiplierExpression: LPAREN test3 RPAREN ;
+                            
+                PLUS        : '+';            
+                MINUS       : '-';            
+                TIMES       : '*';            
+                SLASH       : '/';            
+                LPAREN      : '(';            
+                RPAREN      : ')';            
+                            
+                ID          : [a-zA-Z]+;
+                NUMBER      : [0-9]+;
+                WS          : [ \n\t\r]+ -> skip;
+                EQUAL       : '=';
+                SEMICOLON   : ';';
+            """.trimIndent()
+        )
+
+        val lexer = ANTLRv4Lexer(inputStream)
+        val commonTokenStream = CommonTokenStream(lexer)
+        val parser = ANTLRv4Parser(commonTokenStream)
+
+        val context = parser.grammarSpec()
+
+        val visitor = ANTLRv4ParserTestGeneratorVisitor()
+        visitor.visitGrammarSpec(context)
+
+        val rules = visitor.rules
+        assertEquals(11, rules.size)
+        assertFalse(rules["test1"]?.hasLink!!)
+        assertTrue(rules["test2"]?.hasLink!!)
+        assertTrue(rules["test3"]?.hasLink!!)
+
+        val rulesForGenerationWithDepth = mapOf(
+            "test1" to 2, "test2" to 1, "test3" to 3
+        )
+        assertFalse(visitor.isLexerGrammar)
+        repeat(50) {
+            val generatedValues = rulesForGenerationWithDepth
+                .mapValues { rules[it.key]?.generate(it.value) }
+
+            assertTrue(Regex("""[a-zA-Z]+ = [0-9]+ ;""").matches(generatedValues["test1"]!!))
+            assertTrue(Regex("""[a-zA-Z]+ = [0-9]+""").matches(generatedValues["test2"]!!))
+            val exprSign = Regex("""[+-]""")
+            val multiplier = Regex("""([a-zA-Z]+|[0-9]+)""")
+            val summand = Regex("""($multiplier(([*/])$multiplier)*)""")
+
+            val expression = Regex("""$exprSign?$summand($exprSign$summand)*""")
+
+            assertTrue(expression.matches(generatedValues["test3"]?.replace(" ", "")!!))
+        }
+    }
+
+    @Test
+    fun shouldGenerateForParserRulesWithRecursion() {
+        val inputStream = CharStreams.fromString(
+            """
+                grammar Example1_3;
+
+                expression          : exprSign? summand (exprSign summand)*;
+                
+                exprSign            : PLUS
+                                    | MINUS ;
+                summand             : multiplier (multSign multiplier)*;
+                            
+                multSign            : TIMES            
+                                    | SLASH ;
+                                                
+                multiplier          : multiplierId            
+                                    | multiplierNumber            
+                                    | multiplierExpression ;
+                                                
+                multiplierId        : ID ;
+                            
+                multiplierNumber    : NUMBER ;
+                            
+                multiplierExpression: LPAREN expression RPAREN ;
+                            
+                PLUS        : '+';            
+                MINUS       : '-';            
+                TIMES       : '*';            
+                SLASH       : '/';            
+                LPAREN      : '(';            
+                RPAREN      : ')';            
+                            
+                ID          : [a-zA-Z]+;
+                NUMBER      : [0-9]+;
+                WS          : [ \n\t\r]+ -> skip;
+                EQUAL       : '=';
+                SEMICOLON   : ';';
+            """.trimIndent()
+        )
+
+        val lexer = ANTLRv4Lexer(inputStream)
+        val commonTokenStream = CommonTokenStream(lexer)
+        val parser = ANTLRv4Parser(commonTokenStream)
+
+        val context = parser.grammarSpec()
+
+        val visitor = ANTLRv4ParserTestGeneratorVisitor()
+        visitor.visitGrammarSpec(context)
+
+        val rules = visitor.rules
+        assertEquals(9, rules.size)
+        assertTrue(rules["expression"]?.hasLink!!)
+
+        val rulesForGeneration = listOf("expression")
+        assertFalse(visitor.isLexerGrammar)
+        repeat(50) {
+            val generatedValues = rules
+                .filter { rulesForGeneration.contains(it.key) }
+                .mapValues { it.value.generate(4) }
+
+            val exprSign = Regex("""[+-]""")
+            val summand = Regex("""(([a-zA-Z]+|[0-9]+)(([*/])([a-zA-Z]+|[0-9]+))*)""")
+
+            val expression = Regex("""$exprSign?$summand($exprSign$summand)*""")
+            
+            assertTrue(expression.matches(generatedValues["expression"]!!))
         }
     }
 }
