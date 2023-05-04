@@ -49,7 +49,7 @@ object TestRunner {
                     val correct = correctOutputsByNames[it.name.substringBeforeLast(".")] ?: return "Cannot find solution for file"
 
                     if (Files.mismatch(correct.toPath(), it.toPath()) != -1L) {
-                        return "Tests failed"
+                        return "Tests failed: \n expected: \"${correct.readText()}\", actual: \"${it.readText()}\""
                     }
                 }
         }

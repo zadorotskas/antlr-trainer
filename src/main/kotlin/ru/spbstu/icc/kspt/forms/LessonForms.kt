@@ -128,12 +128,22 @@ internal fun HTML.adminLessonForm(
                     }
 
                     li(classes = "list-group-item $cssClass") {
-                        div(classes = "d-flex justify-content-between") {
+                        val userName = it.userName.replace(" ", "_")
+                        div(classes = "d-flex justify-content-between mb-3") {
                             h5(classes = "mb-1") {
                                 +it.userName
                             }
                             p(classes = "mb-1") {
                                 +"Uploaded at ${it.datetime.format(DateTimeFormatter.ofPattern("dd.MM.yyyy  HH:mm:ss"))}"
+                            }
+                            unsafe {
+                                +"<button class=\"btn btn-primary\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#collapse_${userName}\" aria-expanded=\"false\" aria-controls=\"collapse_${userName}\"> Show message </button>"
+                            }
+                        }
+                        div(classes = "collapse mb-3") {
+                            id = "collapse_${userName}"
+                            div(classes = "card card-body") {
+                                +(it.message ?: "No message")
                             }
                         }
                     }
@@ -308,11 +318,35 @@ fun FORM.tests() {
     h1 {
         +"Tests"
     }
+    br
     div(classes = "input-group") {
         input(classes = "form-control") {
             type = InputType.file
             id = "test-files"
             multiple = true
+        }
+    }
+    br
+    div(classes = "form-check mb-3") {
+        checkBoxInput(classes = "form-check-input") {
+            checked = false
+            id = "generate-tests-checkbox"
+        }
+        label(classes = "form-check-label") {
+            +"Generate tests"
+        }
+    }
+    div(classes = "input-group mb-3") {
+        id = "generate-tests-input-div"
+        input(classes = "form-control") {
+            type = InputType.text
+            id = "generate-tests-number-input"
+            placeholder = "Number"
+        }
+        input(classes = "form-control") {
+            type = InputType.text
+            id = "generate-tests-depth-input"
+            placeholder = "Depth"
         }
     }
 }

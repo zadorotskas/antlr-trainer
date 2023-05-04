@@ -57,6 +57,7 @@ dependencies {
     implementation("at.favre.lib:bcrypt:$bcrypt_version")
     implementation("org.postgresql:postgresql:$postgres_version")
     implementation(group = "com.aspose", name = "aspose-html" , version = aspose_version, classifier = "jdk16")
+    implementation("com.xenoamess:nashorn:jdk8u265-b01-x3")
 
     implementation("org.antlr:antlr4:4.10.1")
     implementation("com.github.curious-odd-man:rgxgen:1.4")

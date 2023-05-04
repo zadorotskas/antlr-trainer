@@ -5,7 +5,7 @@ uploadLesson.addEventListener('click', () => {
     if (lessonFile) {
         formData.append("lesson", lessonFile);
     } else {
-        if (!appendValueToFormDataIfNotEmpty("lesson", document.getElementById("lesson-text-area").value)) return
+        if (!appendValueToFormDataIfNotEmpty(formData, "lesson", document.getElementById("lesson-text-area").value)) return
     }
 
     var solutionFiles = document.getElementById("solution-files").files
@@ -14,13 +14,13 @@ uploadLesson.addEventListener('click', () => {
             formData.append("solutionFiles", solutionFiles[i]);
         }
     } else {
-        if (!appendValueToFormDataIfNotEmpty("g4", document.getElementById("g4-text-area").value)) return
-        if (!appendValueToFormDataIfNotEmpty("main", document.getElementById("main-text-area").value)) return
+        if (!appendValueToFormDataIfNotEmpty(formData, "g4", document.getElementById("g4-text-area").value)) return
+        if (!appendValueToFormDataIfNotEmpty(formData, "main", document.getElementById("main-text-area").value)) return
         if (addListenerCheckbox.checked) {
-            appendValueToFormDataIfNotEmpty("listener", document.getElementById("listener-text-area").value);
+            appendValueToFormDataIfNotEmpty(formData, "listener", document.getElementById("listener-text-area").value);
         }
         if (addVisitorCheckbox.checked) {
-            appendValueToFormDataIfNotEmpty("visitor", document.getElementById("visitor-text-area").value);
+            appendValueToFormDataIfNotEmpty(formData, "visitor", document.getElementById("visitor-text-area").value);
         }
     }
 
@@ -29,6 +29,11 @@ uploadLesson.addEventListener('click', () => {
         for (var i = 0; i < testFiles.length; i++) {
             formData.append("testFiles", testFiles[i]);
         }
+    }
+
+    if (generateTestsCheckbox.checked) {
+        appendValueToFormDataIfNotEmpty(formData, "testNumber", document.getElementById("generate-tests-number-input").value);
+        appendValueToFormDataIfNotEmpty(formData, "maxDepth", document.getElementById("generate-tests-depth-input").value);
     }
 
     sendLesson(formData)
@@ -76,5 +81,19 @@ addVisitorCheckbox.addEventListener('change', () => {
     } else {
         addVisitorDiv.style.visibility = 'hidden'
         addVisitorDiv.style.height = '0px'
+    }
+});
+
+const generateTestsInputDiv = document.getElementById('generate-tests-input-div');
+generateTestsInputDiv.style.visibility = 'hidden'
+generateTestsInputDiv.style.height = '0px'
+const generateTestsCheckbox = document.getElementById('generate-tests-checkbox');
+generateTestsCheckbox.addEventListener('change', () => {
+    if (generateTestsCheckbox.checked) {
+        generateTestsInputDiv.style.visibility = 'visible'
+        generateTestsInputDiv.style.height = '30px'
+    } else {
+        generateTestsInputDiv.style.visibility = 'hidden'
+        generateTestsInputDiv.style.height = '0px'
     }
 });

@@ -11,6 +11,7 @@ object TaskSolutions : Table() {
     val datetime = datetime("datetime")
     val state = enumeration<SolutionState>("state")
     val attempt = long("attempt")
+    val message = text("message").nullable()
 
     override val primaryKey = PrimaryKey(id)
 
@@ -25,7 +26,8 @@ data class TaskSolution(
     val lessonId: Int,
     val datetime: LocalDateTime,
     val state: SolutionState,
-    val attempt: Long
+    val attempt: Long,
+    val message: String?
 )
 
 enum class SolutionState(

@@ -18,6 +18,8 @@ import ru.spbstu.icc.kspt.forms.addLessonForm
 import ru.spbstu.icc.kspt.forms.adminLessonForm
 import ru.spbstu.icc.kspt.forms.allLessonsForm
 import ru.spbstu.icc.kspt.forms.studentLessonForm
+import ru.spbstu.icc.kspt.generator.TestGenerator
+import ru.spbstu.icc.kspt.generator.TestGeneratorConfig
 import ru.spbstu.icc.kspt.model.SolutionState
 import ru.spbstu.icc.kspt.model.UserPrincipal
 import ru.spbstu.icc.kspt.runner.TestRunner
@@ -54,9 +56,10 @@ internal fun Route.lessonRoute() {
                         adminLessonForm(lessonContent, lesson.number, lesson.name, progress, emptyList(), principal)
                     }
                 } else {
-                    val lastAttemptMessage = dao.getLastAttempt(call.userName(), lessonId)?.state?.resultMessage
+                    val lastAttempt = dao.getLastAttempt(call.userName(), lessonId)
+                    val message = lastAttempt?.message
                     call.respondHtml {
-                        studentLessonForm(lessonContent, lesson.number, lesson.name, lastAttemptMessage, principal)
+                        studentLessonForm(lessonContent, lesson.number, lesson.name, message, principal)
                     }
                 }
                 htmlFile.delete()
@@ -76,14 +79,14 @@ internal fun Route.lessonRoute() {
                     )
                     jarFile.parentFile.parentFile.deleteRecursively()
                     result?.let {
-                        dao.updateTaskSolutionState(call.userName(), lessonId, SolutionState.FAILED)
-                        call.respond(HttpStatusCode.ExpectationFailed, "Finished with error: $result")
+                        dao.updateTaskSolutionState(call.userName(), lessonId, SolutionState.FAILED, result)
+                        call.respond(HttpStatusCode.ExpectationFailed, result)
                     } ?: run {
-                        dao.updateTaskSolutionState(call.userName(), lessonId, SolutionState.FINISHED)
+                        dao.updateTaskSolutionState(call.userName(), lessonId, SolutionState.FINISHED, "")
                         call.respond("Finished successfully")
                     }
                 } catch (e: RuntimeException) {
-                    dao.updateTaskSolutionState(call.userName(), lessonId, SolutionState.FAILED)
+                    dao.updateTaskSolutionState(call.userName(), lessonId, SolutionState.FAILED, e.message ?: "")
                     call.respond(HttpStatusCode.ExpectationFailed, e.message ?: "Unknown error")
                 }
             }
@@ -91,9 +94,13 @@ internal fun Route.lessonRoute() {
         authenticate(AuthName.SESSION_ADMIN) {
             post("/upload") {
                 val lessonPath = config.lessonsPath
-                val grammarFile = uploadAndSaveNewLesson(lessonPath)
+                val testGeneratorConfig = TestGeneratorConfig()
+                val grammarFile = uploadAndSaveNewLesson(lessonPath, testGeneratorConfig)
                 val jarFile = withContext(Dispatchers.IO) {
                     ParserBuild.buildSolution(grammarFile.parentFile, grammarFile.name.substringBeforeLast("."), config.antlrLibPath)
+                }
+                if (testGeneratorConfig.needToGenerateTests) {
+                    TestGenerator(testGeneratorConfig).generate()
                 }
                 val result = TestRunner.runAndSave(jarFile, grammarFile.parentFile.parentFile.resolve("test"))
                 jarFile.parentFile.parentFile.deleteRecursively()

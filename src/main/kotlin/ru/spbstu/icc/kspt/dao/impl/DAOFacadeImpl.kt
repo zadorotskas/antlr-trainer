@@ -96,7 +96,8 @@ class DAOFacadeImpl : DAOFacade {
         lessonId: Int,
         datetime: LocalDateTime,
         state: SolutionState,
-        attempt: Long
+        attempt: Long,
+        message: String
     ): TaskSolution? = dbQuery {
         TaskSolutions.insert {
             it[TaskSolutions.userName] = userName
@@ -104,6 +105,7 @@ class DAOFacadeImpl : DAOFacade {
             it[TaskSolutions.datetime] = datetime
             it[TaskSolutions.state] = state
             it[TaskSolutions.attempt] = attempt
+            it[TaskSolutions.message] = message
         }.resultedValues?.singleOrNull()?.let(::resultRowToTaskSolution)
     }
 
@@ -126,11 +128,12 @@ class DAOFacadeImpl : DAOFacade {
             ?.let(::resultRowToTaskSolution)
     }
 
-    override suspend fun updateTaskSolutionState(userName: String, lessonId: Int, newState: SolutionState): Boolean = dbQuery {
+    override suspend fun updateTaskSolutionState(userName: String, lessonId: Int, newState: SolutionState, newMessage: String): Boolean = dbQuery {
         getLastAttempt(userName, lessonId)?.attempt?.let { lastAttempt ->
             TaskSolutions
                 .update({ (TaskSolutions.lessonId eq lessonId) and (TaskSolutions.userName eq userName) and (TaskSolutions.attempt eq lastAttempt)}) {
                     it[state] = newState
+                    it[message] = newMessage
                 } == 1
         } ?: false
     }
@@ -146,7 +149,7 @@ class DAOFacadeImpl : DAOFacade {
             .join(subQuery, JoinType.LEFT, additionalConstraint = {
                 (TaskSolutions.userName eq subQuery[TaskSolutions.userName]) and (TaskSolutions.attempt eq subQuery[TaskSolutions.attempt])
             })
-            .slice(TaskSolutions.id, TaskSolutions.userName, TaskSolutions.lessonId, TaskSolutions.datetime, TaskSolutions.state, TaskSolutions.attempt)
+            .slice(TaskSolutions.id, TaskSolutions.userName, TaskSolutions.lessonId, TaskSolutions.datetime, TaskSolutions.state, TaskSolutions.attempt, TaskSolutions.message)
             .select(
                 (TaskSolutions.lessonId eq lessonId)
                         and (
@@ -168,13 +171,25 @@ class DAOFacadeImpl : DAOFacade {
     }
 
     private fun resultRowToTaskSolution(row: ResultRow): TaskSolution {
+        if (row.fieldIndex.size == 6) {
+            return TaskSolution(
+                id = row[TaskSolutions.id],
+                userName = row[TaskSolutions.userName],
+                lessonId = row[TaskSolutions.lessonId],
+                datetime = row[TaskSolutions.datetime],
+                state = row[TaskSolutions.state],
+                attempt = row[TaskSolutions.attempt],
+                message = null
+            )
+        }
         return TaskSolution(
             id = row[TaskSolutions.id],
             userName = row[TaskSolutions.userName],
             lessonId = row[TaskSolutions.lessonId],
             datetime = row[TaskSolutions.datetime],
             state = row[TaskSolutions.state],
-            attempt = row[TaskSolutions.attempt]
+            attempt = row[TaskSolutions.attempt],
+            message = row[TaskSolutions.message]
         )
     }
 }

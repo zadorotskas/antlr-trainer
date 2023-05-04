@@ -6,13 +6,18 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.util.pipeline.*
 import ru.spbstu.icc.kspt.dao
+import ru.spbstu.icc.kspt.generator.TestGeneratorConfig
 import ru.spbstu.icc.kspt.model.SolutionState
 import java.io.File
+import java.nio.file.Path
 import java.time.LocalDateTime
 
 const val CYRILLIC_TO_LATIN = "Russian-Latin/BGN"
 
-internal suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveNewLesson(path: String): File {
+internal suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveNewLesson(
+    path: String,
+    testGeneratorConfig: TestGeneratorConfig
+): File {
     val multipart = call.receiveMultipart()
 
     var lessonFileBytesParam: ByteArray? = null
@@ -39,6 +44,8 @@ internal suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveNewLess
                     "number" -> numberParam = part.value.toInt()
                     "name" -> fileNameParam = part.value
                     "lesson" -> lessonParam = part.value
+                    "maxDepth" -> testGeneratorConfig.maxDepth = part.value.toInt()
+                    "testNumber" -> testGeneratorConfig.number = part.value.toInt()
 
                     "g4" -> solution.g4String = part.value
                     "main" -> solution.mainString = part.value
@@ -71,16 +78,19 @@ internal suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveNewLess
         file.writeText(it)
     } ?: error("does not receive lesson file")
 
+    val testDirectory = "$directory${File.separator}test"
+    File(testDirectory).mkdirs()
     testFiles.forEach { (name, bytes) ->
-        val testDirectory = "$directory${File.separator}test"
-        File(testDirectory).mkdirs()
         File("$testDirectory${File.separator}$name").writeBytes(bytes)
     }
+    testGeneratorConfig.pathForTests = Path.of(testDirectory)
 
     val solutionFolder = file.parentFile.resolve("solution")
     solutionFolder.mkdirs()
     solution.checkHasCorrectFiles()
-    return solution.createFiles(solutionFolder)
+    return solution.createFiles(solutionFolder).also {
+        testGeneratorConfig.pathWithGrammar = it.toPath()
+    }
 }
 
 internal suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveSolution(path: String, lessonId: Int, userName: String): File {
@@ -111,7 +121,7 @@ internal suspend fun PipelineContext<Unit, ApplicationCall>.uploadAndSaveSolutio
     }
 
     val currentAttempt = dao.getAttemptsCount(userName, lessonId) + 1
-    dao.addTaskSolution(userName, lessonId, LocalDateTime.now(), SolutionState.LOADED, currentAttempt)
+    dao.addTaskSolution(userName, lessonId, LocalDateTime.now(), SolutionState.LOADED, currentAttempt, "")
 
     val solutionFolder = File("$path${File.separator}${lessonId}${File.separator}${userName.replace(" ", "_")}${File.separator}attempts${File.separator}$currentAttempt${File.separator}solution")
     solutionFolder.mkdirs()

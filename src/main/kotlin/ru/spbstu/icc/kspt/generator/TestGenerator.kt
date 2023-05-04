@@ -13,9 +13,16 @@ import kotlin.io.path.writeText
 class TestGenerator(
     private val pathForTests: Path,
     private val pathWithGrammar: Path,
-    val maxDepth: Int,
-    val number: Int
+    private val maxDepth: Int,
+    private val number: Int
 ) {
+    constructor(config: TestGeneratorConfig) : this(
+        pathForTests = config.pathForTests ?: error("missing pathForTests"),
+        pathWithGrammar = config.pathWithGrammar ?: error("missing pathWithGrammar"),
+        maxDepth = config.maxDepth ?: error("missing maxDepth"),
+        number = config.number ?: error("missing number")
+    )
+
     fun generate() {
         val inputStream = CharStreams.fromPath(pathWithGrammar)
         val lexer = ANTLRv4Lexer(inputStream)
