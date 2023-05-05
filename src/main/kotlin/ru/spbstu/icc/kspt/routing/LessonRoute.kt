@@ -9,6 +9,9 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.intellij.markdown.flavours.commonmark.CommonMarkFlavourDescriptor
+import org.intellij.markdown.html.HtmlGenerator
+import org.intellij.markdown.parser.MarkdownParser
 import ru.spbstu.icc.kspt.AuthName
 import ru.spbstu.icc.kspt.CommonRoutes
 import ru.spbstu.icc.kspt.build.ParserBuild
@@ -24,6 +27,8 @@ import ru.spbstu.icc.kspt.model.SolutionState
 import ru.spbstu.icc.kspt.model.UserPrincipal
 import ru.spbstu.icc.kspt.runner.TestRunner
 import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.readText
 
 
 internal fun Route.lessonRoute() {
@@ -49,17 +54,22 @@ internal fun Route.lessonRoute() {
                 val htmlFile = File(htmlPath)
                 val lessonContent = htmlFile.readText().substringAfter("<body>").substringBeforeLast("</body>")
 
+                val src = Path.of(mdPath).readText()
+                val flavour = CommonMarkFlavourDescriptor()
+                val parsedTree = MarkdownParser(flavour).buildMarkdownTreeFromString(src)
+                val html = HtmlGenerator(src, parsedTree, flavour).generateHtml()
+
                 val principal = call.principal<UserPrincipal>()!!
                 if (call.isAdmin()) {
                     val progress = dao.getProgress(lessonId)
                     call.respondHtml {
-                        adminLessonForm(lessonContent, lesson.number, lesson.name, progress, emptyList(), principal)
+                        adminLessonForm(html, lesson.number, lesson.name, progress, config.testsPath, emptyList(), principal)
                     }
                 } else {
                     val lastAttempt = dao.getLastAttempt(call.userName(), lessonId)
                     val message = lastAttempt?.message
                     call.respondHtml {
-                        studentLessonForm(lessonContent, lesson.number, lesson.name, message, principal)
+                        studentLessonForm(html, lesson.number, lesson.name, message, principal)
                     }
                 }
                 htmlFile.delete()

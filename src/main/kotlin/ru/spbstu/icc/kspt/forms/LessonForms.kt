@@ -5,7 +5,10 @@ import ru.spbstu.icc.kspt.model.Lesson
 import ru.spbstu.icc.kspt.model.SolutionState
 import ru.spbstu.icc.kspt.model.TaskSolution
 import ru.spbstu.icc.kspt.model.UserPrincipal
+import java.nio.file.Path
 import java.time.format.DateTimeFormatter
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.readLines
 
 internal fun HTML.allLessonsForm(lessons: List<Lesson>, principal: UserPrincipal) {
     head {
@@ -85,6 +88,7 @@ internal fun HTML.adminLessonForm(
     lessonNumber: Int,
     lessonName: String,
     progress: List<TaskSolution>,
+    testsPath: String,
     notStartedNames: List<String>,
     principal: UserPrincipal
 ) {
@@ -137,13 +141,32 @@ internal fun HTML.adminLessonForm(
                                 +"Uploaded at ${it.datetime.format(DateTimeFormatter.ofPattern("dd.MM.yyyy  HH:mm:ss"))}"
                             }
                             unsafe {
-                                +"<button class=\"btn btn-primary\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#collapse_${userName}\" aria-expanded=\"false\" aria-controls=\"collapse_${userName}\"> Show message </button>"
+                                +"<button class=\"btn btn-primary\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#collapse_${userName}\" aria-expanded=\"false\" aria-controls=\"collapse_${userName}\"> Show details </button>"
                             }
                         }
+                        val testSolution = Path.of(testsPath, it.lessonId.toString(), userName, "attempts", it.attempt.toString(), "solution")
                         div(classes = "collapse mb-3") {
                             id = "collapse_${userName}"
                             div(classes = "card card-body") {
+                                p {
+                                    +"Message:"
+                                }
                                 +(it.message ?: "No message")
+                                br
+                                p {
+                                    +"Solution:"
+                                }
+                                testSolution.listDirectoryEntries().forEach { solutionFile ->
+                                    +"File: ${solutionFile.fileName}"
+                                    br
+                                    pre {
+                                        solutionFile.readLines().forEach { line ->
+                                            +line
+                                            br
+                                        }
+                                    }
+                                    br
+                                }
                             }
                         }
                     }
@@ -172,7 +195,9 @@ internal fun HTML.adminLessonForm(
 private fun FORM.lastAttemptMessage(message: String) {
     div {
         id = "last-attempt-message-div"
-        +message
+        pre {
+            +message
+        }
     }
 }
 
