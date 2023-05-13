@@ -14,13 +14,15 @@ class TestGenerator(
     private val pathForTests: Path,
     private val pathWithGrammar: Path,
     private val maxDepth: Int,
-    private val number: Int
+    private val number: Int,
+    private val numberOfMutations: Int
 ) {
     constructor(config: TestGeneratorConfig) : this(
         pathForTests = config.pathForTests ?: error("missing pathForTests"),
         pathWithGrammar = config.pathWithGrammar ?: error("missing pathWithGrammar"),
         maxDepth = config.maxDepth ?: error("missing maxDepth"),
-        number = config.number ?: error("missing number")
+        number = config.number ?: error("missing number"),
+        numberOfMutations = config.numberOfMutations
     )
 
     fun generate() {
@@ -48,12 +50,17 @@ class TestGenerator(
             repeat(number) {
                 val file = pathForTests.resolve("generated_test_$it.in")
                 file.deleteIfExists()
-                file.writeText(ruleForGeneration.generate(maxDepth))
+                file.writeText(ruleForGeneration.generate(maxDepth, MutationConfig(-1, true)))
+            }
+            repeat(numberOfMutations) {
+                val file = pathForTests.resolve("generated_test_${number + it}.in")
+                file.deleteIfExists()
+                file.writeText(ruleForGeneration.generate(maxDepth, MutationConfig(1)))
             }
         }
     }
 
     private fun MutableCollection<LexerRuleRef>.generateAllRules(): String {
-        return this.shuffled().joinToString(separator = "") { it.generate(-1) }
+        return this.shuffled().joinToString(separator = "") { it.generate(-1, MutationConfig(-1, true)) }
     }
 }

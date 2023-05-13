@@ -35,7 +35,8 @@ internal class TestGeneratorTest {
             pathForTests = tempDirForTests,
             pathWithGrammar = Path.of("src", "test", "resources", "grammar", "lexer", "Test1.g4"),
             maxDepth = 1,
-            number = testsCount
+            number = testsCount,
+            numberOfMutations = 0
         )
 
         generator.generate()
@@ -76,7 +77,29 @@ internal class TestGeneratorTest {
             pathForTests = tempDirForTests,
             pathWithGrammar = Path.of("src", "test", "resources", "grammar", "parser", "Test2.g4"),
             maxDepth = 10,
-            number = testsCount
+            number = testsCount,
+            numberOfMutations = 0
+        )
+
+        generator.generate()
+
+        val generatedFiles = tempDirForTests.listDirectoryEntries()
+        assertEquals(testsCount, generatedFiles.size)
+
+        generatedFiles.forEach {
+            assertGeneratedTestsForParser(it)
+        }
+    }
+
+    @Test
+    fun shouldGenerateTestsWithMutationsForParserGrammar() {
+        val testsCount = 30
+        val generator = TestGenerator(
+            pathForTests = tempDirForTests,
+            pathWithGrammar = Path.of("src", "test", "resources", "grammar", "parser", "Test2.g4"),
+            maxDepth = 10,
+            number = 0,
+            numberOfMutations = testsCount
         )
 
         generator.generate()

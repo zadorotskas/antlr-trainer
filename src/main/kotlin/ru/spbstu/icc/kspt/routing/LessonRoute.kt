@@ -1,6 +1,5 @@
 package ru.spbstu.icc.kspt.routing
 
-import com.aspose.html.converters.Converter
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -48,11 +47,7 @@ internal fun Route.lessonRoute() {
 
                 val lessonName = lesson.name.replace(" ", "_")
                 val filePath = "${config.lessonsPath}${File.separator}${lesson.id}${File.separator}$lessonName"
-                val htmlPath = "$filePath.html"
                 val mdPath = "$filePath.md"
-                Converter.convertMarkdown(mdPath, htmlPath)
-                val htmlFile = File(htmlPath)
-                val lessonContent = htmlFile.readText().substringAfter("<body>").substringBeforeLast("</body>")
 
                 val src = Path.of(mdPath).readText()
                 val flavour = CommonMarkFlavourDescriptor()
@@ -72,7 +67,6 @@ internal fun Route.lessonRoute() {
                         studentLessonForm(html, lesson.number, lesson.name, message, principal)
                     }
                 }
-                htmlFile.delete()
             }
             post("/solution/{id}") {
                 val lessonId = call.parameters["id"]?.toInt() ?: error("missing id in request")

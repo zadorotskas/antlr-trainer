@@ -1,14 +1,16 @@
 package ru.spbstu.icc.kspt.generator.model
 
+import ru.spbstu.icc.kspt.generator.MutationConfig
+
 class RuleBlockLink(
     private val ruleBlock: RuleBlock,
     suffix: String? = null,
     private var text: String = ""
 ): Rule, RuleWithSuffix(suffix) {
 
-    override fun generate(maxDepth: Int): String {
+    override fun generate(maxDepth: Int, mutationConfig: MutationConfig): String {
         return generate {
-            it.generate(maxDepth)
+            it.generate(maxDepth, mutationConfig)
         }
     }
 
@@ -18,12 +20,12 @@ class RuleBlockLink(
             sb.append(generateFunction(ruleBlock))
             sb.append(" ")
         }
-        return sb.toString()
+        return sb.removeSuffix(" ").toString()
     }
 
-    override fun generateNot(maxDepth: Int): String {
+    override fun generateNot(maxDepth: Int, mutationConfig: MutationConfig): String {
         return generate {
-            it.generateNot(maxDepth)
+            it.generateNot(maxDepth, mutationConfig)
         }
     }
 

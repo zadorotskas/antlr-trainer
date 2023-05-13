@@ -4,6 +4,7 @@ import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import ru.spbstu.icc.kspt.generator.MutationConfig
 
 internal class ANTLRv4ParserTestGeneratorVisitorTest {
     @Test
@@ -37,7 +38,7 @@ internal class ANTLRv4ParserTestGeneratorVisitorTest {
         repeat(50) {
             val result = visitor
                 .tokens
-                .mapValues { it.value.generate(-1) }
+                .mapValues { it.value.generate(-1, MutationConfig(-1, true)) }
 
             assertEquals(13, result.size)
             assertTrue(Regex("[0-9]+").matches(result["Num"]!!))
@@ -75,7 +76,7 @@ internal class ANTLRv4ParserTestGeneratorVisitorTest {
 
         assertTrue(visitor.isLexerGrammar)
         repeat(50) {
-            val result = visitor.tokens.mapValues { it.value.generate(-1) }
+            val result = visitor.tokens.mapValues { it.value.generate(-1, MutationConfig(-1, true)) }
 
             assertEquals(2, result.size)
             val first = Regex("[0-9]+").matches(result["Num"]!!)
@@ -147,7 +148,7 @@ internal class ANTLRv4ParserTestGeneratorVisitorTest {
         assertFalse(visitor.isLexerGrammar)
         repeat(50) {
             val generatedValues = rulesForGenerationWithDepth
-                .mapValues { rules[it.key]?.generate(it.value) }
+                .mapValues { rules[it.key]?.generate(it.value, MutationConfig(-1, true)) }
 
             assertTrue(Regex("""[a-zA-Z]+ = [0-9]+ ;""").matches(generatedValues["test1"]!!))
             assertTrue(Regex("""[a-zA-Z]+ = [0-9]+""").matches(generatedValues["test2"]!!))

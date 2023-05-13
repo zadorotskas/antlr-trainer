@@ -1,6 +1,7 @@
 package ru.spbstu.icc.kspt.generator.model
 
 import com.github.curiousoddman.rgxgen.RgxGen
+import ru.spbstu.icc.kspt.generator.MutationConfig
 
 class RuleString(
     private val string: String,
@@ -8,7 +9,7 @@ class RuleString(
     private var text: String = ""
 ) : Rule, RuleWithSuffix(suffix) {
 
-    override fun generate(maxDepth: Int): String {
+    override fun generate(maxDepth: Int, mutationConfig: MutationConfig): String {
         return generate {
            it
         }
@@ -22,7 +23,7 @@ class RuleString(
         return sb.toString()
     }
 
-    override fun generateNot(maxDepth: Int): String {
+    override fun generateNot(maxDepth: Int, mutationConfig: MutationConfig): String {
         return generate {
             RgxGen(it).generateNotMatching()
         }

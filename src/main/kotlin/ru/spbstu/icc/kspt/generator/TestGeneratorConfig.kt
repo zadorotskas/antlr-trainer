@@ -6,7 +6,8 @@ data class TestGeneratorConfig(
     var pathForTests: Path? = null,
     var pathWithGrammar: Path? = null,
     var maxDepth: Int? = null,
-    var number: Int? = null
+    var number: Int? = null,
+    var numberOfMutations: Int = 1
 ) {
     val needToGenerateTests: Boolean
         get() {

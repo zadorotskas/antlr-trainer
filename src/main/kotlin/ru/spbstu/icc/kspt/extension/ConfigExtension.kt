@@ -16,3 +16,6 @@ internal val ApplicationConfig?.oauthClientSecret: String
 
 internal val ApplicationConfig?.antlrLibPath: String
     get() = this?.propertyOrNull("build.antlrLibPath")?.getString() ?: error("missing antlrLibPath in config")
+
+internal val ApplicationConfig?.url: String
+    get() = this?.propertyOrNull("ktor.deployment.url")?.getString() ?: "http://localhost:8080"

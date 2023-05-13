@@ -14,6 +14,7 @@ import io.ktor.server.util.*
 import ru.spbstu.icc.kspt.*
 import ru.spbstu.icc.kspt.extension.oauthClientId
 import ru.spbstu.icc.kspt.extension.oauthClientSecret
+import ru.spbstu.icc.kspt.extension.url
 import ru.spbstu.icc.kspt.model.UserInfo
 import ru.spbstu.icc.kspt.model.UserPrincipal
 import ru.spbstu.icc.kspt.model.UserRole
@@ -63,7 +64,7 @@ fun Application.configureSecurity() {
 
 fun AuthenticationConfig.configureOauth(config: ApplicationConfig, redirects: MutableMap<String, String>) {
     oauth(AuthName.OAUTH) {
-        urlProvider = { "http://localhost:8080/callback" }
+        urlProvider = { "${config.url}/callback" }
         providerLookup = {
             OAuthServerSettings.OAuth2ServerSettings(
                 name = "google",

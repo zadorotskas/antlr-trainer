@@ -1,5 +1,7 @@
 package ru.spbstu.icc.kspt.generator.model
 
+import ru.spbstu.icc.kspt.generator.MutationConfig
+
 
 class RuleBlock(
     private val alts: MutableList<Rule> = mutableListOf(),
@@ -7,22 +9,22 @@ class RuleBlock(
     private var text: String = ""
 ) : Rule, RuleWithSuffix(suffix) {
 
-    override fun generate(maxDepth: Int): String {
+    override fun generate(maxDepth: Int, mutationConfig: MutationConfig): String {
         return generate(maxDepth) {
-            it.generate(maxDepth)
+            it.generate(maxDepth, mutationConfig)
         }
     }
 
-    override fun generateNot(maxDepth: Int): String {
+    override fun generateNot(maxDepth: Int, mutationConfig: MutationConfig): String {
         return generate(maxDepth) {
-            it.generateNot(maxDepth)
+            it.generateNot(maxDepth, mutationConfig)
         }
     }
 
     private fun generate(maxDepth: Int, generateFunction: (Rule) -> String): String {
         if (alts.isEmpty()) return ""
 
-        val separator = if (maxDepth == -1) "" else " "
+        val separator = if (maxDepth <= -1) "" else " "
         var lastException: IllegalStateException? = null
         alts.shuffled().forEach { alt ->
 
