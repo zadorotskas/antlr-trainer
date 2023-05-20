@@ -39,6 +39,11 @@ class ANTLRv4ParserTestGeneratorVisitor : ANTLRv4ParserBaseVisitor<MutableList<R
         return mutableListOf()
     }
 
+    override fun visitLabeledAlt(ctx: LabeledAltContext?): MutableList<Rule> {
+        ctx ?: return mutableListOf()
+        return visitAlternative(ctx.getChild(0) as AlternativeContext)
+    }
+
     override fun visitAlternative(ctx: AlternativeContext?): MutableList<Rule> {
         ctx ?: return mutableListOf()
         return mutableListOf(

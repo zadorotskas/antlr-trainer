@@ -166,8 +166,8 @@ class Solution {
             filesName = g4String?.trim()?.split(" ")?.get(1)?.substringBeforeLast(";") ?: error("cannot receive files name")
         }
         parentFolder.resolve("Main.java").create(mainString, mainFile)
-        parentFolder.resolve("${capitalize(filesName!!)}Listener.java").create(listenerString, listenerFile)
-        parentFolder.resolve("${capitalize(filesName!!)}Visitor.java").create(visitorString, visitorFile)
+        parentFolder.resolve("Listener.java").create(listenerString, listenerFile)
+        parentFolder.resolve("Visitor.java").create(visitorString, visitorFile)
         return parentFolder.resolve("$filesName.g4").also {
             it.create(g4String, g4File)
         }

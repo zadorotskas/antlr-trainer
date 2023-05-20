@@ -17,6 +17,12 @@ object ParserBuild {
         }
 
         Files.copy(solutionDirectory.resolve("Main.java").toPath(), tempDirectory.resolve("Main.java"))
+        if (solutionDirectory.resolve("Listener.java").exists()) {
+            Files.copy(solutionDirectory.resolve("Listener.java").toPath(), tempDirectory.resolve("Listener.java"))
+        }
+        if (solutionDirectory.resolve("Visitor.java").exists()) {
+            Files.copy(solutionDirectory.resolve("Visitor.java").toPath(), tempDirectory.resolve("Visitor.java"))
+        }
         val classes = tempDirectory.listDirectoryEntries()
             .filter { it.name.endsWith(".java") }
             .joinToString(separator = " ") { "$tempDirectory${File.separatorChar}${it.fileName}" }

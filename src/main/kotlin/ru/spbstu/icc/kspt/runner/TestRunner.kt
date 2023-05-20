@@ -70,7 +70,11 @@ object TestRunner {
         }
 
         val error = getInputStreamContent(process.errorStream)
-        if (error.isNotEmpty()) return error
+        if (error.isNotEmpty()) {
+            withContext(Dispatchers.IO) {
+                outputFile.writeText(error)
+            }
+        }
         return null
     }
 
