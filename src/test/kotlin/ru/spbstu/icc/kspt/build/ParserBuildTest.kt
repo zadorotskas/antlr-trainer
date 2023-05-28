@@ -3,6 +3,7 @@ package ru.spbstu.icc.kspt.build
 import io.mockk.*
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -126,20 +127,27 @@ internal class ParserBuildTest {
         every { javacProcess.waitFor() } returns 0
         every { javacProcess.errorStream } returns InputStream.nullInputStream()
 
-        val jarBuilder = mockk<JarBuilder>(relaxed = true)
-        every { jarBuilder.setMainClass("Main") } just runs
-//        every { jarBuilder.addJar(File(eq(antlrLibPath))) } just runs
-
-//        mockkStatic("ru.spbstu.icc.kspt.build.JarBuilder")
-//        every { JarBuilder() } returns jarBuilder
         mockkConstructor(JarBuilder::class)
-        every { anyConstructed<JarBuilder>().use {  } } just runs
+        every { anyConstructed<JarBuilder>().use {
+            it.setMainClass("Main")
+            it.openJar(any())
+            it.add(
+                any(),
+                any()
+            )
+            it.addJar(any())
+            it.close()
+        } } just runs
 
         // when
-        ParserBuild.buildSolution(solutionDirectory.toFile(), "test", antlrLibPath)
+        val result = ParserBuild.buildSolution(solutionDirectory.toFile(), "test", antlrLibPath)
 
         // then
-        verify { jarBuilder.setMainClass("Main") }
+        val tempDirForJar = result.parentFile.parentFile
+        assertTrue(tempDirForJar.resolve("Main.java").exists())
+        assertTrue(tempDirForJar.resolve("Listener.java").exists())
+        assertTrue(tempDirForJar.resolve("Visitor.java").exists())
+        tempDirForJar.deleteRecursively()
     }
 
     @AfterEach
